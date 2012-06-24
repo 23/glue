@@ -26,3 +26,4 @@ Include
     {% glue video %}
     {% glue video with "className":"my-video" %}
     {% glue video with "className":"my-video", "autoPlay":true %}
+    {% glue logo with "showLogo":true, "logoAlpha":0.6 %}

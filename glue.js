@@ -56,15 +56,26 @@ var Glue = window.Glue = (function($){
             
             try {
                 Glue.log('debug', 'Loading', name);
+                // Create a default container for the module
                 var moduleContainer = $(document.createElement('div'));
+                // Load the module
                 var m = Glue.providedModules[name];
                 m = Glue.modules[name] = m[1](Glue,$,$.extend({container:moduleContainer},m[0],properties));
+                m.moduleName = name;
+                // Set a class name for the container
                 if(m&&m.container) {
                   if(m.className) {
                     m.container.addClass(m.className);
                   } else {
                     m.container.addClass('glue-'+name);
                   }
+                }
+                // Create a rendering function for the template
+                m.render = function(path){
+                  path = path||m.moduleName+'/'+m.moduleName+'.liquid';
+                  Glue.readLiquidFile(path, function(tmpl){
+                      $(m.container).html(tmpl.render(Glue));
+                    });
                 }
             }catch(err){
                 Glue.log('error', "Module '" + name + "' could not be loaded", err);
@@ -197,7 +208,19 @@ var Glue = window.Glue = (function($){
        }
     }));
 
+    // SUPPORT GLUE GETTER VARS IN LIQUID
+    Liquid.Context.prototype.get = function(varname) {
+      var ret = this.resolve(varname);
+      try {if(ret==null) ret = Glue.get(varname);}catch(e){};
+      return ret;
+    }
+
     return Glue;
 })(jQuery);
+
+
+
+
+
 
 
