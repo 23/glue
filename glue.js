@@ -60,8 +60,16 @@ var Glue = window.Glue = (function($){
                 var moduleContainer = $(document.createElement('div'));
                 // Load the module
                 var m = Glue.providedModules[name];
-                m = Glue.modules[name] = m[1](Glue,$,$.extend({container:moduleContainer},m[0],properties));
-                m.moduleName = name;
+                var render = function(callback, path, container){
+                  callback = callback||function(){};
+                  path = path||m.moduleName+'/'+m.moduleName+'.liquid';
+                  container = container||moduleContainer;
+                  Glue.readLiquidFile(path, function(tmpl){
+                      $(container).html(tmpl.render(Glue));
+                      callback();
+                    });
+                }
+                m = Glue.modules[name] = m[1](Glue,$,$.extend({moduleName:name, render:render, container:moduleContainer},m[0],properties));
                 // Set a class name for the container
                 if(m&&m.container) {
                   if(m.className) {
@@ -71,12 +79,6 @@ var Glue = window.Glue = (function($){
                   }
                 }
                 // Create a rendering function for the template
-                m.render = function(path){
-                  path = path||m.moduleName+'/'+m.moduleName+'.liquid';
-                  Glue.readLiquidFile(path, function(tmpl){
-                      $(m.container).html(tmpl.render(Glue));
-                    });
-                }
             }catch(err){
                 Glue.log('error', "Module '" + name + "' could not be loaded", err);
             }
