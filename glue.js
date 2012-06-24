@@ -56,10 +56,16 @@ var Glue = window.Glue = (function($){
             
             try {
                 Glue.log('debug', 'Loading', name);
-                var moduleContainer = $(document.createElement('div')).addClass('glue-'+name);
-                //Glue.container.append(moduleContainer);
+                var moduleContainer = $(document.createElement('div'));
                 var m = Glue.providedModules[name];
-                Glue.modules[name] = m[1](Glue,$,$.extend({container:moduleContainer},m[0],properties));
+                m = Glue.modules[name] = m[1](Glue,$,$.extend({container:moduleContainer},m[0],properties));
+                if(m&&m.container) {
+                  if(m.className) {
+                    m.container.addClass(m.className);
+                  } else {
+                    m.container.addClass('glue-'+name);
+                  }
+                }
             }catch(err){
                 Glue.log('error', "Module '" + name + "' could not be loaded", err);
             }

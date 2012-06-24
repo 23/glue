@@ -18,3 +18,11 @@ Simplifying by having a flat namespace and non-discriminating middleware model f
 Designed to be loaded in a context -- but also to have that context changed, for example by reloading query parameters and thus changing a large part of the application. 
 
 Designed for individual modules to be changeable while maintaining the overall integrity. 
+
+## Reference
+
+Include
+
+    {% glue video %}
+    {% glue video with "className":"my-video" %}
+    {% glue video with "className":"my-video", "autoPlay":true %}
