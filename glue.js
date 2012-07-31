@@ -13,216 +13,231 @@
   - glue:loaded
   - glue:reset
 */
-var Glue = window.Glue = (function($){
-    var Glue = this;
-    Glue.version = '0.0.1';
+var Glue = function(opts){
+  if( typeof(Liquid)=='undefined' ) {
+    alert('Liquid is required by Glue');
+    return;
+  }
+  var $ = jQuery;
+  var $this = this;
 
-    /* UTILITY & DEBUGGING */
-    Glue.log = function(){
-      if(arguments[0]!='error') return;
-      console.log(arguments);
-    }
+  /* ADDITIONAL OPTIONS */
+  opts=opts||{};
+  $this.alias = opts.alias||null;
 
-    /* QUERY PARAMETERS */
-    Glue.parametersString = location.search.substr(1);
-    Glue.parameters = {};
-    if(Glue.parametersString.length>0){
-        $.each(Glue.parametersString.split('&'), function(i,comp){
-            var s = comp.split('=');
-            Glue.parameters[decodeURIComponent(s[0])] = decodeURIComponent(s[1]);
-        });
-    }
+  /* UTILITY & DEBUGGING */
+  $this.log = function(){
+    //if(arguments[0]!='error') return;
+    console.log(arguments);
+  }
 
-    /* MODULES */
-    /* Call this to register a new module */
-    Glue.providedModules = {};
-    Glue.modules = {};
-    Glue.provide = function(name,opts,f){
-        opts = opts||{};
-        Glue.providedModules[name] = [opts,f];
-    }
-    Glue.use = function(name, properties){
-        if(!$.isArray(name)) name=[name];
-        $.each(name, function(index,name){
-            if(!Glue.providedModules[name]) {
-                Glue.log('error', "Module '" + name + "' doesn't exist");
-                return;
-            }
-            if(Glue.modules[name]) {
-              // Module has already been loaded
-              Glue.log('debug', "Module '" + name + "' has already been loaded");
-              return;
-            }
+  /* QUERY PARAMETERS */
+  $this.parametersString = location.search.substr(1);
+  $this.parameters = {};
+  if($this.parametersString.length>0){
+    $.each($this.parametersString.split('&'), function(i,comp){
+        var s = comp.split('=');
+        $this.parameters[decodeURIComponent(s[0])] = decodeURIComponent(s[1]);
+      });
+  }
+
+  /* MODULES */
+  /* Call this to register a new module */
+  $this.providedModules = {};
+  $this.modules = [];
+  $this.provide = function(name,opts,f){
+    opts = opts||{};
+    $this.providedModules[name] = [opts,f];
+  }
+  $this.use = function(name, properties){
+    if(!$.isArray(name)) name=[name];
+    var ret = [];
+    $.each(name, function(index,name){
+        if(!$this.providedModules[name]) {
+          $this.log('error', "Module '" + name + "' doesn't exist");
+          return;
+        }
+        /*
+        if($this.modules[name]) {
+          // Module has already been loaded
+          $this.log('error', "Module '" + name + "' has already been loaded");
+          return;
+        }
+        */
             
-            try {
-                Glue.log('debug', 'Loading', name);
-                // Create a default container for the module
-                var moduleContainer = $(document.createElement('div'));
-                // Load the module
-                var m = Glue.providedModules[name];
-                var render = function(callback, path, container){
-                  callback = callback||function(){};
-                  path = path||m.moduleName+'/'+m.moduleName+'.liquid';
-                  container = container||moduleContainer;
-                  Glue.readLiquidFile(path, function(tmpl){
-                      $(container).html(tmpl.render(Glue));
-                      callback();
-                    });
-                }
-                m = Glue.modules[name] = m[1](Glue,$,$.extend({moduleName:name, render:render, container:moduleContainer},m[0],properties));
-                // Set a class name for the container
-                if(m&&m.container) {
-                  if(m.className) {
-                    m.container.addClass(m.className);
-                  } else {
-                    m.container.addClass('glue-'+name);
-                  }
-                }
-                // Create a rendering function for the template
-            }catch(err){
-                Glue.log('error', "Module '" + name + "' could not be loaded", err);
+        try {
+          $this.log('debug', 'Loading', name);
+          // Create a default container for the module
+          var moduleContainer = $(document.createElement('div'));
+          // Load the module
+          var coreModule = $this.providedModules[name];
+          var m = new coreModule[1]($this,$,$.extend({_id:$this.modules.length, moduleName:name, container:moduleContainer, _initRender:[], render:function(){this._initRender=[arguments[0], arguments[1], arguments[2]];}},coreModule[0],properties));
+          console.debug(m.render);
+          // The module is loaded, allow for rendering
+          m.render = function(callback, path, container){
+            callback = callback||function(){};
+            path = path||m.moduleName+'/'+m.moduleName+'.liquid';
+            container = container||moduleContainer;
+            $this.readLiquidFile(path, function(tmpl){
+                $(container).html(tmpl.render({module:m}));
+                callback();
+              });
+          }
+          // ... and then render is m.render() was called during initiation
+          if(m._initRender.length>0) m.render(m._initRender[0], m._initRender[1], m._initRender[2]);
+          
+          // Set a class name for the container
+          if(m&&m.container) {
+            if(m.className) {
+              m.container.addClass(m.className);
+            } else {
+              m.container.addClass('glue-'+name);
+              if($this.alias) m.container.addClass($this.alias+'-'+name);
             }
-        });
-    }
+          }
 
-
-    /* EVENTS */
-    Glue.events = {};
-    Glue.bind = function(e,f){
-        $.each(e.split(' '), function(i,e){
-            Glue.events[e] = Glue.events[e]||[];
-            Glue.events[e].push(f);
-        });
-    }
-    Glue.fire = function(e,o){
-        $.each(Glue.events[e]||[], function(i,f){
-            var ret = f(e,o);
-            if(typeof(ret)!='undefined') o = ret;
-        });
-        return o;
-    }
-
-    /* DYNAMIC PROPERTIES */
-    Glue.getters = {};
-    Glue.getter = function(prop,f){
-        Glue.getters[prop] = f;
-    }
-    Glue.get = function(prop){
-        if(Glue.getters[prop]){
-            return Glue.getters[prop](prop);
-        } else {
-            throw "No getter for property '"+prop+"'";
+          // Finally, save the status
+          $this.modules.push(m);
+          ret.push(m);
+        }catch(err){
+          $this.log('error', "Module '" + name + "' could not be loaded", err);
         }
-    }
-    Glue.setters = {};
-    Glue.setter = function(prop,f){
-        Glue.setters[prop] = f;
-    }
-    Glue.set = function(prop,value){
-        if(Glue.setters[prop]){
-            return Glue.setters[prop](value,prop);
-        } else {
-            throw "No setter for property '"+prop+"'";
-        }
-    }
+      });
+    return(ret);
+  }
 
-    /* BOOTSTRAPPING */
-    Glue.settings = $.extend({}, Glue.parameters);
+  /* EVENTS */
+  $this.events = {};
+  $this.bind = function(e,f){
+    $.each(e.split(' '), function(i,e){
+        $this.events[e] = $this.events[e]||[];
+        $this.events[e].push(f);
+      });
+  }
+  $this.fire = function(e,o){
+    $.each($this.events[e]||[], function(i,f){
+        var ret = f(e,o);
+        if(typeof(ret)!='undefined') o = ret;
+      });
+    return o;
+  }
 
-    // Handle actual loading
-    Glue.loaded = false;
-    Glue.container = null;
-    Glue.app = null;
-    Glue.fire('glue:init');
-    Glue.load = function(template,container){
-      Glue.container = container;
-      Glue.template = template;
-      Glue.readLiquidFile(Glue.template, function(tmpl){
-           $(Glue.container).html(tmpl.render(Glue));
-           Glue.loaded = false;
+  /* DYNAMIC PROPERTIES */
+  $this.getters = {};
+  $this.getter = function(prop,f){
+    $this.getters[prop] = f;
+  }
+  $this.get = function(prop){
+    if($this.getters[prop]){
+      return $this.getters[prop](prop);
+    } else {
+      throw "No getter for property '"+prop+"'";
+    }
+  }
+  $this.setters = {};
+  $this.setter = function(prop,f){
+    $this.setters[prop] = f;
+  }
+  $this.set = function(prop,value){
+    if($this.setters[prop]){
+      return $this.setters[prop](value,prop);
+    } else {
+      throw "No setter for property '"+prop+"'";
+    }
+  }
+
+  /* BOOTSTRAPPING */
+  $this.settings = $.extend({}, $this.parameters);
+
+  // Handle actual loading
+  $this.loaded = false;
+  $this.container = null;
+  $this.app = null;
+  $this.fire('glue:init');
+  $this.load = function(template,container){
+    $this.container = container;
+    $this.template = template;
+    $this.readLiquidFile($this.template, function(tmpl){
+        $($this.container).html(tmpl.render($this));
+        $this.loaded = false;
+      });
+
+  }
+
+  /* PANIC! */
+  $this.fail = function(err){throw err;}
+
+  /* MODIFY LIQUID.JS FOR OUR PURPOSES */
+  // Read in a template file, either from cache or from 
+  $this.liquidTemplates = {};
+  $this.readLiquidFile = function(url, callback) {
+    if ($this.liquidTemplates[url]) {
+      callback($this.liquidTemplates[url]);
+    } else {
+      $.ajax({
+          url:url,
+          success:function(res) {
+            var tmpl = Liquid.parse(res);
+            $this.liquidTemplates[url] = tmpl;
+            callback(tmpl);
+          }
         });
-
     }
-
-    /* PANIC! */
-    Glue.fail = function(err){throw err;}
-
-    /* MODIFY LIQUID.JS FOR OUR PURPOSES */
-    // Read in a template file, either from cache or from 
-    Glue.liquidTemplates = {};
-    Glue.readLiquidFile = function(url, callback) {
-      if (Glue.liquidTemplates[url]) {
-        callback(Glue.liquidTemplates[url]);
-      } else {
-        $.ajax({
-            url:url,
-            success:function(res) {
-              var tmpl = Liquid.parse(res);
-              Glue.liquidTemplates[url] = tmpl;
-              callback(tmpl);
-            }
-          });
-      }
+  }
+  // Since liquid is stricly for strings we need to 
+  // run some post-rendering magic/hacking with the 
+  // DOM. This is done by inserting a temporary <span>
+  // Which in turn is replace with the module's 
+  // container <div>.
+  var _stubReplacerRunning = false;
+  $this.stubReplace = function(scheduled){
+    if(typeof(scheduled)=='undefined' && _stubReplacerRunning) return;
+    _stubReplacerRunning = true;
+    var stubs = $('span.glue-stub');
+    if(stubs.length>0) {
+      $(stubs).each(function(i,stub){
+          var moduleId = $(stub).attr('rel').substr(4);
+          if($this.modules[moduleId] && $this.modules[moduleId].container) {
+            // There's a container waiting to be sub'ed in
+            $(stub).replaceWith($this.modules[moduleId].container);
+          }else{
+            // Either the module didn't load, or the module
+            // doesn't use its container. Remove tmp stub.
+            $(stub).remove();
+          }
+        });
+      _stubReplacerRunning = false;
+    } else {
+      window.setTimeout(function(){$this.stubReplace(1);}, 500);
     }
-    // Since liquid is stricly for strings we need to 
-    // run some post-rendering magic/hacking with the 
-    // DOM. This is done by inserting a temporary <span>
-    // Which in turn is replace with the module's 
-    // container <div>.
-    var _stubReplacerRunning = false;
-    Glue.stubReplace = function(scheduled){
-      if(typeof(scheduled)=='undefined' && _stubReplacerRunning) return;
-      _stubReplacerRunning = true;
-      var stubs = $('span.glue-stub');
-      if(stubs.length>0) {
-        $(stubs).each(function(i,stub){
-            var moduleName = $(stub).attr('rel');
-            if(Glue.modules[moduleName] && Glue.modules[moduleName].container) {
-              // There's a container waiting to be sub'ed in
-              $(stub).replaceWith(Glue.modules[moduleName].container);
-            }else{
-              // Either the module didn't load, or the module
-              // doesn't use its container. Remove tmp stub.
-              $(stub).remove();
-            }
-          });
-        _stubReplacerRunning = false;
-      } else {
-        window.setTimeout(function(){Glue.stubReplace(1);}, 500);
-      }
-    }
-    Liquid.Template.registerTag('glue', Liquid.Tag.extend({
-       tagSyntax: /([a-zA-Z0-9_-]+)(\s+(?:with)\s+(.+))?/,
+  }
+  var glueTag = Liquid.Tag.extend({
+      tagSyntax: /([a-zA-Z0-9_-]+)(\s+(?:with)\s+(.+))?/,
         
-       init: function(tag, markup, tokens) {
-         var m = markup.match(this.tagSyntax);
-         this.attributes = {};
-         this.attributes['module'] = m[1];
-         this.attributes['properties'] = (m[3] ? $.parseJSON('{' + m[3] + '}') : {});
-         this._super(tag, markup, tokens);
-       }, 
-       render: function(context) {
-         // Load up the module with properties
-         Glue.use(this.attributes.module, this.attributes.properties);
-         // Return placeholder HTML to be replace with the module container
-         Glue.stubReplace();
-         return '<span style="display:none; position:absolute; top:-100px;" class="glue-stub" rel="'+this.attributes.module+'"></span>';
-       }
-    }));
+      init: function(tag, markup, tokens) {
+        var m = markup.match(this.tagSyntax);
+        this.attributes = {};
+        this.attributes['module'] = m[1];
+        this.attributes['properties'] = (m[3] ? $.parseJSON('{' + m[3] + '}') : {});
+        this._super(tag, markup, tokens);
+      }, 
+      render: function(context) {
+        // Load up the module with properties
+        var m = $this.use(this.attributes.module, this.attributes.properties)[0];
+        // Return placeholder HTML to be replace with the module container
+        $this.stubReplace();
+        return '<span style="display:none; position:absolute; top:-100px;" class="glue-stub" rel="glue'+m._id+'"></span>';
+      }
+    });
+  Liquid.Template.registerTag('glue', glueTag);
+  if($this.alias) Liquid.Template.registerTag($this.alias, glueTag);
 
-    // SUPPORT GLUE GETTER VARS IN LIQUID
-    Liquid.Context.prototype.get = function(varname) {
-      var ret = this.resolve(varname);
-      try {if(ret==null) ret = Glue.get(varname);}catch(e){};
-      return ret;
-    }
+  // SUPPORT GLUE GETTER VARS IN LIQUID
+  Liquid.Context.prototype.get = function(varname) {
+    var ret = this.resolve(varname);
+    try {if(ret==null) ret = $this.get(varname);}catch(e){};
+    return ret;
+  }
 
-    return Glue;
-})(jQuery);
-
-
-
-
-
-
-
+  return $this;
+};
