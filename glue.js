@@ -13,9 +13,11 @@
   - glue:loaded
   - glue:reset
 */
+if(!console){var console = {log:function(){},debug:function(){}};}
+
 var Glue = function(opts){
   if( typeof(Liquid)=='undefined' ) {
-    alert('Liquid is required by Glue');
+    alert('Liquid.js is required by Glue');
     return;
   }
   var $ = jQuery;
@@ -72,7 +74,6 @@ var Glue = function(opts){
           // Load the module
           var coreModule = $this.providedModules[name];
           var m = new coreModule[1]($this,$,$.extend({_id:$this.modules.length, moduleName:name, container:moduleContainer, _initRender:[], render:function(){this._initRender=[arguments[0], arguments[1], arguments[2]];}},coreModule[0],properties));
-          console.debug(m.render);
           // The module is loaded, allow for rendering
           m.render = function(callback, path, container){
             callback = callback||function(){};

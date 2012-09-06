@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <!-- External dependencies: Liquid Glue -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script src="http://reference.dev.visualtube.net/resources/um/script/kickem/liquid.ymin.js"></script>
+    <script src="../glue/glue.js"></script>
+
+    <!-- External dependencies: For the player -->
+    <script src="https://raw.github.com/23/visualplatform.js/master/visualplatform.js"></script>
+
+    <!-- Modules -->
+    <script src="core/core.js"></script>
+    <script src="analytics/analytics.js"></script>
+    <script src="sharing/sharing.js"></script>
+    <script src="video-display/video-display.js"></script>
+    <script src="logo/logo.js"></script>
+    <script src="scrubber/scrubber.js"></script>
+    <script src="big-play-button/big-play-button.js"></script>
+    <script src="play-button/play-button.js"></script>
+    <script src="volume-button/volume-button.js"></script>
+    <script src="fullscreen-button/fullscreen-button.js"></script>
+    <script src="info/info.js"></script>
+
+    <!-- Module style -->
+    <link rel="stylesheet" type="text/css" href="player.css" />
+    <link rel="stylesheet" type="text/css" href="video-display/video-display.css" />
+    <link rel="stylesheet" type="text/css" href="logo/logo.css" />
+    <link rel="stylesheet" type="text/css" href="scrubber/scrubber.css" />
+    <link rel="stylesheet" type="text/css" href="info/info.css" />
+  </head>
+  <body>
+    <script>
+      var Player = new Glue('player');
+      Player.load('player.liquid', 'body');
+    </script>
+  </body>
+</html>
