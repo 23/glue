@@ -13,7 +13,7 @@
   - glue:loaded
   - glue:reset
 */
-if(!console){var console = {log:function(){},debug:function(){}};}
+if(!console){var console = {log:function(){},debug:function(){alert(arguments[0])}};}
 
 var Glue = function(opts){
   if( typeof(Liquid)=='undefined' ) {
@@ -30,7 +30,7 @@ var Glue = function(opts){
   /* UTILITY & DEBUGGING */
   $this.log = function(){
     //if(arguments[0]!='error') return;
-    console.log(arguments);
+    console.log(arguments[2]);
   }
 
   /* QUERY PARAMETERS */
@@ -201,6 +201,7 @@ var Glue = function(opts){
           if($this.modules[moduleId] && $this.modules[moduleId].container) {
             // There's a container waiting to be sub'ed in
             $(stub).replaceWith($this.modules[moduleId].container);
+            if($this.modules[moduleId].onAppend) $this.modules[moduleId].onAppend();
           }else{
             // Either the module didn't load, or the module
             // doesn't use its container. Remove tmp stub.
