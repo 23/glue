@@ -30,7 +30,9 @@ var Glue = function(opts){
   /* UTILITY & DEBUGGING */
   $this.log = function(){
     //if(arguments[0]!='error') return;
-    console.log(arguments[2]);
+    try {
+      console.log(arguments[2]);
+    }catch(e){};
   }
 
   /* QUERY PARAMETERS */
@@ -81,6 +83,30 @@ var Glue = function(opts){
             container = container||moduleContainer;
             $this.readLiquidFile(path, function(tmpl){
                 $(container).html(tmpl.render({module:m}));
+                $(container).find('a[href]').each(function(i,a){
+                    var a = $(a);
+                    href = a.attr('href')
+                    if(href.match(/^\$/)) {
+                      var s = href.substr(1).split(':');
+                      switch(s[0]) {
+                      case 'toggle':
+                        a.click(function(e){
+                            $this.set(s[1], !$this.get(s[1]));
+                            e.stopPropagation();
+                            return false;
+                          });
+                        break;
+                      case 'set':
+                        a.click(function(e){
+                            $this.set(s[1], s[2]);
+                            e.stopPropagation();
+                            return false;
+                          });
+                        break;
+                      }
+                      a.attr('href', '#');
+                    }
+                  });
                 callback();
               });
           }
