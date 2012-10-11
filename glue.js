@@ -73,7 +73,7 @@ var Glue = function(opts){
           // The module is loaded, allow for rendering
           m.render = function(callback, path, container){
             callback = callback||function(){};
-            path = $this.loadPath+path||$this.loadPath+m.moduleName+'/'+m.moduleName+'.liquid';
+            path = $this.loadPath+(path||m.moduleName+'/'+m.moduleName+'.liquid');
             container = container||moduleContainer;
             $this.readLiquidFile(path, function(tmpl){
                 $(container).html(tmpl.render({module:m}));
