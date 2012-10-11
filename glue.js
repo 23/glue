@@ -12,6 +12,7 @@
   - glue:init
   - glue:loaded
   - glue:reset
+  - glue:render
 */
 if(!console){var console = {log:function(){},debug:function(){alert(arguments[0])}};}
 
@@ -26,6 +27,7 @@ var Glue = function(opts){
   /* ADDITIONAL OPTIONS */
   opts=opts||{};
   $this.alias = opts.alias||null;
+  $this.loadPath = opts.loadPath||'';
 
   /* UTILITY & DEBUGGING */
   $this.log = function(){
@@ -61,14 +63,6 @@ var Glue = function(opts){
           $this.log('error', "Module '" + name + "' doesn't exist");
           return;
         }
-        /*
-        if($this.modules[name]) {
-          // Module has already been loaded
-          $this.log('error', "Module '" + name + "' has already been loaded");
-          return;
-        }
-        */
-            
         try {
           $this.log('debug', 'Loading', name);
           // Create a default container for the module
@@ -79,34 +73,23 @@ var Glue = function(opts){
           // The module is loaded, allow for rendering
           m.render = function(callback, path, container){
             callback = callback||function(){};
-            path = path||m.moduleName+'/'+m.moduleName+'.liquid';
+            path = path||$this.loadPath+m.moduleName+'/'+m.moduleName+'.liquid';
             container = container||moduleContainer;
             $this.readLiquidFile(path, function(tmpl){
                 $(container).html(tmpl.render({module:m}));
-                $(container).find('a[href]').each(function(i,a){
-                    var a = $(a);
-                    href = a.attr('href')
-                    if(href.match(/^\$/)) {
-                      var s = href.substr(1).split(':');
-                      switch(s[0]) {
-                      case 'toggle':
-                        a.click(function(e){
-                            $this.set(s[1], !$this.get(s[1]));
-                            e.stopPropagation();
-                            return false;
-                          });
-                        break;
-                      case 'set':
-                        a.click(function(e){
-                            $this.set(s[1], s[2]);
-                            e.stopPropagation();
-                            return false;
-                          });
-                        break;
-                      }
-                      a.attr('href', '#');
-                    }
+                
+                // Handle simple click/enter/leave commands
+                $(container).find('*[click]').each(function(i,el){
+                    $(el).click({command:$(el).attr('click')}, _runCommand);
                   });
+                $(container).find('*[enter]').each(function(i,el){
+                    $(el).mouseenter({command:$(el).attr('enter')}, _runCommand);
+                  });
+                $(container).find('*[leave]').each(function(i,el){
+                    $(el).mouseleave({command:$(el).attr('leave')}, _runCommand);
+                  });
+
+                $this.fire('glue:render', $(container));
                 callback();
               });
           }
@@ -131,6 +114,33 @@ var Glue = function(opts){
         }
       });
     return(ret);
+  }
+
+  // Parse a string to run simple set/toggle commands
+  var _runCommand = function(e){
+    var d = e.data||e;
+    $.each(d.command.split(';'), function(i,s){
+        var a = s.trim().substr(1).split(':');
+        // Rough string conversion
+        var k = a[1];
+        if(a.length>=3) {
+          var v = a[2];
+          if(isNaN(v)){
+            if(v=='true') v = true;
+            else if(v=='false') v = false;
+          } else {
+            v = new Number(v);
+          }
+        }
+        switch(a[0]) {
+        case 'toggle':
+          $this.set(k, !$this.get(k));
+          break;
+        case 'set':
+          $this.set(k, v);
+          break;
+        }
+      });
   }
 
   /* EVENTS */
