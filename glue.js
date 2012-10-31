@@ -120,7 +120,8 @@ var Glue = function(opts){
   var _runCommand = function(e){
     var d = e.data||e;
     $.each(d.command.split(';'), function(i,s){
-        var a = s.trim().substr(1).split(':');
+        s = (s.trim ? s.trim() : s.replace(/^\s+|\s+$/g, ''));
+        var a = s.substr(1).split(':');
         // Rough string conversion
         var k = a[1];
         if(a.length>=3) {
