@@ -14,7 +14,7 @@
   - glue:reset
   - glue:render
 */
-if(!console){var console = {log:function(){},debug:function(){alert(arguments[0])}};}
+if(!console){var console = {log:function(){},debug:function(){}}}
 
 var Glue = function(opts){
   if( typeof(Liquid)=='undefined' ) {
@@ -137,6 +137,9 @@ var Glue = function(opts){
         case 'toggle':
           $this.set(k, !$this.get(k));
           break;
+        case 'fire':
+          $this.fire(a.slice(1).join(':'), {});
+          break;
         case 'set':
           $this.set(k, v);
           break;
@@ -203,7 +206,7 @@ var Glue = function(opts){
   }
 
   /* PANIC! */
-  $this.fail = function(err){throw err;}
+  $this.fail = function(err){console.debug(err); throw err;}
 
   /* MODIFY LIQUID.JS FOR OUR PURPOSES */
   // Read in a template file, either from cache or from 
