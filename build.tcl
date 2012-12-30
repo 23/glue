@@ -59,6 +59,13 @@ set manifest_json [read $fd]
 close $fd
 set manifest [json::json2dict $manifest_json]
 
+# Version
+set glueVersion [dict get $manifest glueVersion]
+if { $glueVersion ne "1" } {
+    puts "The manifest cannot be compiled with this version of Glue"
+    exit
+}
+
 # Names
 set name [dict get $manifest name]
 set object [dict get $manifest object]
