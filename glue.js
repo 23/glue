@@ -157,6 +157,7 @@ var Glue = function(opts){
   }
   $this.fire = function(e,o){
     $.each($this.events[e]||[], function(i,f){
+        //$this.profile(e);
         var ret = f(e,o);
         if(typeof(ret)!='undefined') o = ret;
       });
@@ -205,6 +206,10 @@ var Glue = function(opts){
 
   }
 
+  /* PROFILING */
+  $this.profilingStartTime = (typeof(profilingStartTime)!='undefined' ? profilingStartTime : (new Date()).getTime());
+  $this.profile = function(message){console.debug((new Date()).getTime()-$this.profilingStartTime, message);}
+
   /* PANIC! */
   $this.fail = function(err){console.debug(err); throw err;}
 
@@ -213,6 +218,7 @@ var Glue = function(opts){
   $this.liquidTemplates = {};
   $this.readLiquidFile = function(url, callback) {
     if ($this.liquidTemplates[url]) {
+      if(!$this.liquidTemplates[url].parse) $this.liquidTemplates[url] = Liquid.parse($this.liquidTemplates[url]);
       callback($this.liquidTemplates[url]);
     } else {
       $.ajax({
