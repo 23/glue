@@ -211,7 +211,7 @@ var Glue = function(opts){
   $this.profile = function(message){console.debug((new Date()).getTime()-$this.profilingStartTime, message);}
 
   /* PANIC! */
-  $this.fail = function(err){console.debug(err); throw err;}
+  $this.fail = function(err){console.log(err); throw err;}
 
   /* MODIFY LIQUID.JS FOR OUR PURPOSES */
   // Read in a template file, either from cache or from 
