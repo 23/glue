@@ -12,7 +12,7 @@ proc create_dev_html {name object bootstrapModule dir deps css js} {
     set _js [list]
     foreach _ $js {lappend _js "    <script src=\"${_}\"></script>"}
     set fd [open [file join $dir "${name}.html"] w]
-    puts $fd "<!DOCTYPE html>\n<html>\n  <head>\n    <!-- Module stylesheets -->\n[join $_css \n]\n\n    <!-- Glue, jQuery, Liquid,js and other dependencies -->\n[join $_deps \n]\n\n    <!-- Bootstrap the Glue object and all modules -->\n    <script>var ${object} = new Glue({alias:'${name}'});</script>\n[join $_js \n]\n  </head>\n  <body>\n    <script>\n      ${object}.use('${bootstrapModule}',{});\n    </script>\n    <noscript><p>You must enable JavaScript to view this content.</p></noscript>\n  </body>\n</html>"
+    puts $fd "<!DOCTYPE html>\n<html>\n  <head>\n    <script>var GLUEDEV=true;</script>\n\n    <!-- Module stylesheets -->\n[join $_css \n]\n\n    <!-- Glue, jQuery, Liquid,js and other dependencies -->\n[join $_deps \n]\n\n    <!-- Bootstrap the Glue object and all modules -->\n    <script>var ${object} = new Glue({alias:'${name}'});</script>\n[join $_js \n]\n  </head>\n  <body>\n    <script>\n      ${object}.use('${bootstrapModule}',{});\n    </script>\n    <noscript><p>You must enable JavaScript to view this content.</p></noscript>\n  </body>\n</html>"
     close $fd
 }
 

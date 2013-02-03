@@ -69,7 +69,8 @@ var Glue = function(opts){
           var moduleContainer = $(document.createElement('div'));
           // Load the module
           var coreModule = $this.providedModules[name];
-          var m = new coreModule[1]($this,$,$.extend({_id:$this.modules.length, moduleName:name, container:moduleContainer, _initRender:[], render:function(){this._initRender=[arguments[0], arguments[1], arguments[2]];}},coreModule[0],properties));
+          var relativePath = (typeof(GLUEDEV)!='undefined' ? name+'/' : './');
+          var m = new coreModule[1]($this,$,$.extend({_id:$this.modules.length, moduleName:name, path:relativePath, container:moduleContainer, _initRender:[], render:function(){this._initRender=[arguments[0], arguments[1], arguments[2]];}},coreModule[0],properties));
           // The module is loaded, allow for rendering
           m.render = function(callback, path, container){
             callback = callback||function(){};
