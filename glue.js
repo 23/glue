@@ -77,7 +77,7 @@ var Glue = function(opts){
             path = $this.loadPath+(path||m.moduleName+'/'+m.moduleName+'.liquid');
             container = container||moduleContainer;
             $this.readLiquidFile(path, function(tmpl){
-                $(container).html(tmpl.render({module:m}));
+                $(container).html(tmpl.render({module:m}).replace(/\s+$/,'').replace(/^\s+/,''));
                 
                 // Handle simple click/enter/leave commands
                 $(container).find('*[click]').each(function(i,el){
