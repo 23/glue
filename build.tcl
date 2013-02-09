@@ -87,6 +87,7 @@ set css_paths [list]
 set js_files [list]
 set js_paths [list]
 set liquid_files [list]
+set liquid_script [list]
 set other_files [list]
 foreach module $modules {
     foreach filename [glob -nocomplain [file join $src_dir $module *]] {
