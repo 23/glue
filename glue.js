@@ -33,7 +33,7 @@ var Glue = function(opts){
   $this.log = function(){
     //if(arguments[0]!='error') return;
     try {
-      console.log(arguments[2]);
+      console.log(arguments[1], arguments[2]);
     }catch(e){};
   }
 
@@ -159,8 +159,12 @@ var Glue = function(opts){
   $this.fire = function(e,o){
     $.each($this.events[e]||[], function(i,f){
         //$this.profile(e);
-        var ret = f(e,o);
-        if(typeof(ret)!='undefined') o = ret;
+        try {
+          var ret = f(e,o);
+          if(typeof(ret)!='undefined') o = ret;
+        }catch(err){
+          $this.log('error', 'Error while firing ' + e + ': ' + err);
+        }
       });
     return o;
   }
