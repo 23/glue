@@ -77,7 +77,29 @@ var Glue = function(opts){
             path = $this.loadPath+(path||m.moduleName+'/'+m.moduleName+'.liquid');
             container = container||moduleContainer;
             $this.readLiquidFile(path, function(tmpl){
-                $(container).html(tmpl.render({module:m}).replace(/\s+$/,'').replace(/^\s+/,''));
+                var currentHTML = $(container).html();
+                var html = tmpl.render({module:m}).replace(/\s+$/,'').replace(/^\s+/,'');
+                if(html==currentHTML) return; // the template hasn't changed, do nothing
+
+                if(currentHTML=='' && html!='' && m.showAnimation) {
+                  // Animate from nothing to something
+                  if(typeof(m.showAnimation.length)=='undefined') m.showAnimation = [m.showAnimation];
+                  if(typeof(m.showAnimation[0].display)=='undefined') m.showAnimation[0].display = 'block';
+                  $(container)
+                    .hide()
+                    .html(html)
+                    .animate(m.showAnimation[0], m.showAnimation[1]||500);
+                } else if(currentHTML!='' && html=='' && m.hideAnimation) {
+                  // Animate from something to nothing
+                  if(typeof(m.hideAnimation.length)=='undefined') m.hideAnimation = [m.showAnimation];
+                  if(typeof(m.hideAnimation[0].display)=='undefined') m.hideAnimation[0].display = 'none';
+                  $(container).animate(m.hideAnimation[0], m.hideAnimation[1]||500, function(){
+                      $(container).html('');
+                    });
+                } else {
+                  $(container).html(html);
+                }
+
                 
                 // Handle simple click/enter/leave commands
                 $(container).find('*[click]').each(function(i,el){
