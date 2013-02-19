@@ -33,7 +33,7 @@ var Glue = function(opts){
   $this.log = function(){
     //if(arguments[0]!='error') return;
     try {
-      console.log(arguments[1], arguments[2]);
+      if(typeof(GLUEDEV)!='undefined') console.log(arguments[1], arguments[2]);
     }catch(e){};
   }
 
