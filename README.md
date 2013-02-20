@@ -148,7 +148,22 @@ The second and third argument (`templatePath` and `container`) are used to rende
     $this.render(function(){}, 'info/info-button.liquid', 
       $container.find('.button-container'));
 
-## Building the application with manifests
+# Animations
+
+Glue uses to [jQuery's `$.animate(...)`](http://api.jquery.com/animate/) to add simple animations on rendering. Modules can add preferences for how content is animated in when going from an empty template to one with content -- and of course the other way around:
+
+    $this.showAnimation = [animationProperties, duration];
+    $this.hideAnimation = [animationProperties, duration];
+
+For example:
+
+    $this.showAnimation = [{opacity:'show', height:'show'}, 300];
+    $this.hideAnimation = [{opacity:'hide', height:'hide'}, 200];
+
+Notice that Glue won't animate content changes in the rendered template; only changes from nothing to something and the reverse are affected.
+
+
+# Building the application with manifests
 A final core premise of Glue is that all modules, liquid files, stylesheets and design assets must be distributable in a optimized fashion. This is why Glue ships with a build script to generate both the development version and a minified and optimized version of the application. The flow around this is pretty simple: Set up a manifest file for the application and run the build script.
 
 A manifest file is a piece of JSON specifying the glue version, its object names, all dependencies and all the require modules. For examples:
