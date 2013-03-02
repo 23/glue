@@ -210,8 +210,9 @@ var Glue = function(opts){
     }
   }
   $this.setters = {};
-  $this.setter = function(prop,f){
+  $this.setter = function(prop,f,shortcut){
     $this.setters[prop] = f;
+    if(shortcut) $this.addShortcut(shortcut,prop);
   }
   $this.set = function(prop,value){
     if($this.setters[prop]){
@@ -219,6 +220,38 @@ var Glue = function(opts){
     } else {
       throw "No setter for property '"+prop+"'";
     }
+  }
+  
+  /* SHORTCUTS TO SETTERS */
+  $this.specialKeys = {'backspace': 8, 'tab': 9, 'enter': 13, 'pause': 19, 'capslock': 20, 'esc': 27, 'space': 32, 'pageup': 33, 'pagedown': 34, 'end': 35, 'home': 36, 'left': 37, 'up': 38, 'right': 39, 'down': 40, 'insert': 45, 'delete': 46, 'f1': 112, 'f2': 113, 'f3': 114, 'f4': 115, 'f5': 116, 'f6': 117, 'f7': 118, 'f8': 119, 'f9': 120, 'f10': 121, 'f11': 122, 'f12': 123, '?': 191};
+  $this.addShortcut = function(shortcut,prop){
+    $(document).keydown(function(e){
+      var matched = (shortcut.length>0)
+      $.each(shortcut, function(i,str){
+        switch(str) {
+        case 'ctrl':
+          matched = matched && e.ctrlKey;
+          break;
+        case 'alt':
+          matched = matched && e.altKey;
+          break;
+        case 'meta':
+          matched = matched && e.metaKey;
+          break;
+        default:
+          if($this.specialKeys[str.toLowerCase()]) {
+            matched = matched && (e.which==$this.specialKeys[str.toLowerCase()]);
+          } else {
+            matched = matched && (String.fromCharCode(e.which)==str.toUpperCase());
+          }
+          break;
+        }
+      });
+      if(matched) {
+        $this.setters[prop](shortcut);
+        e.preventDefault();
+      }
+    });
   }
 
   /* BOOTSTRAPPING */
@@ -281,6 +314,7 @@ var Glue = function(opts){
             // There's a container waiting to be sub'ed in
             $(stub).replaceWith($this.modules[moduleId].container);
             if($this.modules[moduleId].onAppend) $this.modules[moduleId].onAppend();
+            $this.fire('glue:render', $this.modules[moduleId].container);
           }else{
             // Either the module didn't load, or the module
             // doesn't use its container. Remove tmp stub.
