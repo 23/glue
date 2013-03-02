@@ -224,8 +224,24 @@ var Glue = function(opts){
   
   /* SHORTCUTS TO SETTERS */
   $this.specialKeys = {'backspace': 8, 'tab': 9, 'enter': 13, 'pause': 19, 'capslock': 20, 'esc': 27, 'space': 32, 'pageup': 33, 'pagedown': 34, 'end': 35, 'home': 36, 'left': 37, 'up': 38, 'right': 39, 'down': 40, 'insert': 45, 'delete': 46, 'f1': 112, 'f2': 113, 'f3': 114, 'f4': 115, 'f5': 116, 'f6': 117, 'f7': 118, 'f8': 119, 'f9': 120, 'f10': 121, 'f11': 122, 'f12': 123, '?': 191};
+  $this.shortcuts = [];
   $this.addShortcut = function(shortcut,prop){
-    $(document).keydown(function(e){
+    if(!shortcut||typeof(shortcut.length)=='undefined'||shortcut.length==0) return;
+    if($.isArray(shortcut[0])) {
+      // Multiple shortcuts
+      $.each(shortcut, function(i,sc){
+        $this.shortcuts.push([sc,prop]);
+      });
+    } else {
+      // Single shortcut
+      $this.shortcuts.push([shortcut,prop]);
+    }
+  }
+  // Listen to shortcuts
+  $(document).keydown(function(e){
+    $.each($this.shortcuts, function(i,item) {
+      var shortcut = item[0];
+      var prop = item[1];
       var matched = (shortcut.length>0)
       $.each(shortcut, function(i,str){
         switch(str) {
@@ -252,7 +268,7 @@ var Glue = function(opts){
         e.preventDefault();
       }
     });
-  }
+  });
 
   /* BOOTSTRAPPING */
   $this.settings = $.extend({}, $this.parameters);
