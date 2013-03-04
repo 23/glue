@@ -1,21 +1,21 @@
 # What is Glue?
 
-Glue is a deliberately simple JavaScript application framework, built on top of Liquid.js and jQuery. The library lets you build an application from modules -- each stylable with Liquid Markup and communication to the rest of the aplication through events and through shared getter and setter properties.
+Glue is a deliberately simple JavaScript application framework, built on top of Liquid.js and jQuery. The library lets you build an application from modules. Each module is stylable with Liquid Markup. And modules communicate with the rest of the aplication through events and through shared getter and setter properties.
 
 The philosophy behind Glue is simplicity and it's right there in the name: It's about building modular apps with HTML, CSS, Liquid -- and glueing them together with as little JavaScript logic as possible.
 
-There are a number of JavaScript frameworks designed for application development out there: SproutCore, Ember, Backbone are just a few examples. The learning curves of these libraries are pretty steep though, mostly because the very wide scope of features -- counting complex object types and inheritance, offline sync and persistency and other awesomeness as a part of their mission. 
+There are a number of JavaScript frameworks designed for application development out there: SproutCore, Ember, Backbone are just a few examples. The learning curves of these libraries are pretty steep though, mostly due to the very wide scope of features -- counting complex object types and inheritance, offline sync and persistency and other awesomeness as a part of their mission. 
 
-Glue is much less ambitious: We want to bootstrap modules, have those communicate in a simple fashion, and to use a well-documented templating language to build to view.
+Glue is much less ambitious: We want to bootstrap modules, have those communicate in a simple fashion, and to use a well-documented templating language to build views.
 
 Moreover, the usual batch of application frameworks are made to build complex applications. This makes for a good amount of flexibility, but also for untouchable code and design. 
 
-Glue was built to let people modify existing video players and mobile applications, so a key requirement was to create something that could be meddled and played with. This is why the starting point for Glue is HTML and Liquid templates. And then you build upon that.
+Glue was originally built to let people modify existing video players and mobile applications, so a key requirement was to create something which could be meddled with. This is why the starting point for Glue is HTML and Liquid templates. And then you build upon that.
 
 # Modules
 Glue modules are simple to the point of being stupid: Each module is just a piece of middleware which listens to events and posts some of its own. It exchanges information with templates and other modules through getters and setters. And it optionally has its own Liquid templates, CSS styles and design assets. 
 
-Glue bootstraps the application by loading a single module and it's template. This template in turn loads all the other modules. Such a template can look like this to load a `core`, an `analytics` and and `info` module with including an overloaded property:
+Glue bootstraps the application by loading a single module and it's template. This template in turn loads all the other modules. Such a template can look like this to load a `core`, an `analytics` and an `info` module (with an overloaded property):
 
     {% module core %}
     {% module analytics %}	
@@ -23,7 +23,7 @@ Glue bootstraps the application by loading a single module and it's template. Th
       {% module info with "showDescription":true %}
     </div>
 
-A module starts out with a piece of boilerplate JavaScript. For example if the project name is `Player` and you're building a module to show as title and a description within the player (in `src/info/info.js`)
+A module starts out with a piece of boilerplate JavaScript. For example if the project name is `Player` and you're building a module to show a title and a description within the player (in `src/info/info.js`)
 
     Player.provide('info', 
       {showDescription: true}, 
@@ -36,14 +36,14 @@ A module starts out with a piece of boilerplate JavaScript. For example if the p
       }
     );
 
-This will load up the module, create a container for it within the application -- and every time `.render()` is called on the module object, the the standard template for the module (`src/info/info.liquid`) is processed and placed in to the document. This could be:
+This will load up the module, create a container for it within the application -- and every time `.render()` is called on the module object, the standard template for the module (`src/info/info.liquid`) is processed and placed in to the document. This could be:
 
     <h1 class="info-title">{{title}}</div>
     {% if showDescription == true %}
         <p class="info-description">{{description}}</p>
     {% endif %}
 
-If a module is only JavaScript logic as has no template, simply run dele the module container when loading the module:
+If a module is only JavaScript logic as has no template, simply `delete` the module container when loading the module:
     
     Player.provide('analytics', 
       {}, 
@@ -57,7 +57,7 @@ If a module is only JavaScript logic as has no template, simply run dele the mod
     );
 
 # Properties with Getters and Setters
-Each modules can interact other parts of the application through properties. These are defined as getters and setters on the module, which is turn can be access by both liquid templates and in JavaScript. In the examples above we saw a few examples of such properties:
+Each module interacts with other parts of the application through properties. These are defined as getters and setters on the module, which is turn can be access by both liquid templates and in JavaScript. In the examples above we saw a few examples of such properties:
 
     Player.getter('showDescription', function(){
         return $this.showDescription;
@@ -74,7 +74,7 @@ Each modules can interact other parts of the application through properties. The
         return "A similarly good description for the element";
       });
 
-Now, other parts of of the application can read titles and descriptions:
+Now, other parts of the application can read titles and descriptions:
 
     Player.get('title');
     Player.get('description');
@@ -94,7 +94,7 @@ In all these cases, `.get()` and `.set()` just invoke JavaScript functions, so e
 # Events
 The other core concept for interaction between different parts of the application is events. All modules can invoke their own events and listen to those of others. Similarly, templates can invoke events of their own.
 
-An event listener can have any name, but for clarify it's usually nice to namespace it a bit. For example, we could fire an event every time a title is updated:
+An event listener can have any name, but for clarity it's usually nice to namespace it a bit. For example, we could fire an event every time a title is updated:
 
     Player.setter('info', function(i){
         $this.info = i;
@@ -107,7 +107,7 @@ And in turn another module could listen to the event:
 		console.log('Info was updated', i);
 	  });
 
-The Glue library itself fire to different event: On initilization, it sends `glue:init` -- and every time a template has been rendered, `glue:render` is fired.
+The Glue library itself fires two different events: On initilization, it sends `glue:init` -- and every time a template has been rendered, `glue:render` is fired.
 
 # Liquid Templates
 Module templates are a combination of HTML and Liquid Markup. Liquid is a safe HTML markup language, originally [developed for Rails and Shopify](http://liquidmarkup.org/) -- but also used to customize our own [23 Video](http://help.23video.com/customer/portal/articles/586745-introduction-to-liquid). It makes it easy for designers to build conditional templates and to build designs using variables. 
@@ -127,7 +127,7 @@ Additionally, there's a bit of extra magical markup that allow events to fire an
 	    A different button
 	 </button>
 
-Any HTML element can use `click`, `enter` and `leave` as properties -- and `$set:variableName:value` will set a property while `$fire:eventName` will fire off an even. You can also use `$toggle:variableName` to toggle a boolean.
+Any HTML element can use `click`, `enter` and `leave` as properties -- and `$set:variableName:value` will set a property while `$fire:eventName` will fire off an event. You can also use `$toggle:variableName` to toggle a boolean.
 
 Each Glue module will usually have a single liquid template attached to it, but as we saw above there are cases where a module won't have a template -- and you can even have multiple templates for a module as well.
 
@@ -160,11 +160,11 @@ For example:
     $this.showAnimation = [{opacity:'show', height:'show'}, 300];
     $this.hideAnimation = [{opacity:'hide', height:'hide'}, 200];
 
-Notice that Glue won't animate content changes in the rendered template; only changes from nothing to something and the reverse are affected.
+Notice that Glue won't animate content changes in the rendered template; only changes from nothing to something and the reverse are animated.
 
 # Keyboard shortcuts
 
-Glue adds simple support for keyboard shortcuts. Shortcuts can be attached to a property setter:
+Glue ships with simple support for keyboard shortcuts. Shortcuts can be attached to a property setter:
 
     Builder.setter('nextTab, function(){
       $this.jumpToTab($this.tab+1);
@@ -182,8 +182,11 @@ You can attach multiple shortcuts, and the actual shortcut being used will be us
       $this.jumpToTab(num);
     }, [['ctrl','1'], ['ctrl','2'], ['ctrl','3']]);
 
+Apart from standard keys you can use the following key modifiers: `backspace`, `tab`, `enter`, `pause`, `capslock`, `esc`, `space`, `pageup`, `pagedown`, `end`, `home`, `left`, `up`, `right`, `down`, `insert`, `delete`, `f1`, `f2`, `f3`, `f4`, `f5`, `f6`, `f7`, `f8`, `f9`, `f10`, `f11` and `f12`.
+
 
 # Building the application with manifests
+
 A final core premise of Glue is that all modules, liquid files, stylesheets and design assets must be distributable in a optimized fashion. This is why Glue ships with a build script to generate both the development version and a minified and optimized version of the application. The flow around this is pretty simple: Set up a manifest file for the application and run the build script.
 
 A manifest file is a piece of JSON specifying the glue version, its object names, all dependencies and all the require modules. For examples:
@@ -209,7 +212,7 @@ A manifest file is a piece of JSON specifying the glue version, its object names
       ]
     }
 
-In this case our application name is `player` and the core glue object is `Player. We will load a few dependencies from either local files or URLs. The bootstrap module is `design` and `design`, `core`, `analytics` and `info` will all be available to load.
+In this case our application name is `player` and the core glue object is `Player. We will load a few dependencies from either local files or URLs. The bootstrap module is `design` — and `design`, `core`, `analytics` and `info` will all be available to load.
 
 To build the application, place all modules in folder with `src/` and then run:
  
@@ -219,7 +222,7 @@ This in turn will create a new file called `src/player.html` for development and
 
 The automatically generated version will include any CSS files included in the module folder, so if you have a `src/info/info.css` file it will be referenced with a `<link rel="stylesheet" href=info/info.css" type="text/css" />` in the development version. In the distribution version, the stylesheet will be minified and nicely placed in a single file.
 
-This method make for a rapid deployment process with optimized code, but it will also host files in different folder depending on whether it's a development or distribution version. For this reason, always reference local files is stylesheets:
+This method make for a rapid deployment process with optimized code, but it will also host files in different folders depending on whether it's a development or distribution version. For this reason, always reference local files is stylesheets:
 
     .info-icon {background-image:url('info-png.png');}
 
@@ -228,6 +231,6 @@ And when you reference asset files in liquid, use `{{module.path}}` as a prefix:
     <img src="{{module.path}}info-icon.png" />
     
 # Examples and Dependencies
-Glue was originally designed by [23](http://www.23company.com) as a foundation for building custom video players. The [repository for these players](https://github.com/23/player) serves as a good example of Glue in praticse.
+Glue was originally designed by [23](http://www.23company.com) as a foundation for building custom video players. The [repository for these players](https://github.com/23/player) serves as a good example of Glue in practice.
 
 Glue is built on top of [jQuery](http://jquery.com/) and [Liquid.js](https://github.com/darthapo/liquid.js), although for the latter we use [our own fork](https://github.com/23/liquid.js) by default.
