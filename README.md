@@ -162,6 +162,26 @@ For example:
 
 Notice that Glue won't animate content changes in the rendered template; only changes from nothing to something and the reverse are affected.
 
+# Keyboard shortcuts
+
+Glue adds simple support for keyboard shortcuts. Shortcuts can be attached to a property setter:
+
+    Builder.setter('nextTab, function(){
+      $this.jumpToTab($this.tab+1);
+    }, ['ctrl','right']);
+
+    Builder.setter('previousTab, function(){
+      $this.jumpToTab($this.tab-1);
+    }, ['ctrl','left']);
+
+You can attach multiple shortcuts, and the actual shortcut being used will be used as the setter value:
+
+    Builder.setter('jumpToTabFile', function(num){
+      // This might be something like ['ctrl','3']
+      num = (num.length ? new Number(num[1]) : num);
+      $this.jumpToTab(num);
+    }, [['ctrl','1'], ['ctrl','2'], ['ctrl','3']]);
+
 
 # Building the application with manifests
 A final core premise of Glue is that all modules, liquid files, stylesheets and design assets must be distributable in a optimized fashion. This is why Glue ships with a build script to generate both the development version and a minified and optimized version of the application. The flow around this is pretty simple: Set up a manifest file for the application and run the build script.
