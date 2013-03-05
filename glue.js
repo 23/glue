@@ -10,9 +10,8 @@
 
   Fires events:
   - glue:init
-  - glue:loaded
-  - glue:reset
   - glue:render
+  - glue:added
 */
 if(!console){var console = {log:function(){},debug:function(){}}}
 
@@ -330,7 +329,7 @@ var Glue = function(opts){
             // There's a container waiting to be sub'ed in
             $(stub).replaceWith($this.modules[moduleId].container);
             if($this.modules[moduleId].onAppend) $this.modules[moduleId].onAppend();
-            $this.fire('glue:render', $this.modules[moduleId].container);
+            $this.fire('glue:added', $this.modules[moduleId].container);
           }else{
             // Either the module didn't load, or the module
             // doesn't use its container. Remove tmp stub.

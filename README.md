@@ -107,7 +107,11 @@ And in turn another module could listen to the event:
 		console.log('Info was updated', i);
 	  });
 
-The Glue library itself fires two different events: On initilization, it sends `glue:init` -- and every time a template has been rendered, `glue:render` is fired.
+The Glue library itself fires two different events: 
+
+* On initilization, it sends `glue:init`.
+* When a module is added to the DOM, `glue:added` is fired.
+* Every time a template has been (re-)rendered, `glue:render` is fired.
 
 # Liquid Templates
 Module templates are a combination of HTML and Liquid Markup. Liquid is a safe HTML markup language, originally [developed for Rails and Shopify](http://liquidmarkup.org/) -- but also used to customize our own [23 Video](http://help.23video.com/customer/portal/articles/586745-introduction-to-liquid). It makes it easy for designers to build conditional templates and to build designs using variables. 
