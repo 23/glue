@@ -201,9 +201,9 @@ var Glue = function(opts){
   $this.getter = function(prop,f){
     $this.getters[prop] = f;
   }
-  $this.get = function(prop){
+  $this.get = function(prop,a,b,c,d){
     if($this.getters[prop]){
-      return $this.getters[prop](prop);
+      return $this.getters[prop](prop,a,b,c,d);
     } else {
       throw "No getter for property '"+prop+"'";
     }
