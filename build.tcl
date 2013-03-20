@@ -50,6 +50,50 @@ proc concat_code {files output_filename {minify_type "none"}} {
     close $fd
 }
 
+proc css_inline_data_uris {css_filename {max_file_size_kb "8"}} {
+    package require base64
+
+    set fd [open $css_filename r]
+    set css [read $fd]
+    close $fd
+    set css_folder [file dirname $css_filename]
+    
+    foreach match [regexp -all -inline {[a-z\-]+\s*:[^;\{\}]+} $css] {
+        if { [regexp {^(.+)url\([\'\"]?([^\)\'\"]+)[\'\"]?\)(.*)$} $match ignore before filename after] } {
+            set filename [string map [list ".." "" "/" ""] $filename]
+            switch -exact -- [file extension $filename] {
+                .png {
+                    set mime_type "image/png"
+                }
+                .gif {
+                    set mime_type "image/gif"
+                }
+                .jpeg -
+            .jpg {
+                set mime_type "image/jpeg"
+            }
+            }
+            if { [info exists mime_type] } {
+                set real_filename [file join $css_folder $filename]
+                if { [file exists $real_filename] && [file size $real_filename]<=[expr $max_file_size_kb*1024] } {
+                    set fd [open $real_filename r]
+                    fconfigure $fd -translation binary
+                    set data [base64::encode -wrapchar "" [read $fd]]
+                    close $fd
+                    set uri_expression "${before}url('data:${mime_type};base64,${data}')${after}"
+                    set new_css_expression "${uri_expression}"
+                    #set new_css_expression "${match}; ${uri_expression}"
+                    set css [string map [list $match $new_css_expression] $css]
+                }
+            }
+            unset mime_type
+        }
+    }
+    
+    set fd [open $css_filename w]
+    puts $fd $css
+    close $fd
+}
 
 set manifest_filename [file join [pwd] [lindex $argv 0]]
 set manifest_dir [file dirname $manifest_filename]
@@ -132,7 +176,9 @@ concat_code [concat \
                  $liquid_script \
                  $js_files \
                 ] [file join $dist_dir "${name}.js"] js
-concat_code $css_files [file join $dist_dir "${name}.css"] css
+set css_filename [file join $dist_dir "${name}.css"]
+concat_code $css_files $css_filename css
+css_inline_data_uris $css_filename
 create_dist_html $name $object $bootstrapModule $dist_dir
 
 # Development version
