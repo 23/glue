@@ -69,9 +69,9 @@ proc css_inline_data_uris {css_filename {max_file_size_kb "8"}} {
                     set mime_type "image/gif"
                 }
                 .jpeg -
-            .jpg {
-                set mime_type "image/jpeg"
-            }
+                .jpg {
+                    set mime_type "image/jpeg"
+                }
             }
             if { [info exists mime_type] } {
                 set real_filename [file join $css_folder $filename]
@@ -81,12 +81,12 @@ proc css_inline_data_uris {css_filename {max_file_size_kb "8"}} {
                     set data [base64::encode -wrapchar "" [read $fd]]
                     close $fd
                     set uri_expression "${before}url('data:${mime_type};base64,${data}')${after}"
-                    set new_css_expression "${uri_expression}"
-                    #set new_css_expression "${match}; ${uri_expression}"
+                    #set new_css_expression "${uri_expression}"
+                    set new_css_expression "${match}; ${uri_expression}"
                     set css [string map [list $match $new_css_expression] $css]
                 }
             }
-            unset mime_type
+            catch {unset mime_type}
         }
     }
     
