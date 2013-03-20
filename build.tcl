@@ -81,8 +81,9 @@ proc css_inline_data_uris {css_filename {max_file_size_kb "8"}} {
                     set data [base64::encode -wrapchar "" [read $fd]]
                     close $fd
                     set uri_expression "${before}url('data:${mime_type};base64,${data}')${after}"
+                    # Use the old express with an IE7 hack to support the non-data uri case
+                    set new_css_expression "${uri_expression}; *${match}"
                     #set new_css_expression "${uri_expression}"
-                    set new_css_expression "${match}; ${uri_expression}"
                     set css [string map [list $match $new_css_expression] $css]
                 }
             }
