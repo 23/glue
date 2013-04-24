@@ -244,6 +244,10 @@ If you are embedding your application on a website and want to communicate with 
       myApp.set("playing", true);
     </script>
 
+GlueFrame accesses methods and properties in your application directly when the iframe and the page it is embedded on have the same protocol, domain and port. If not, messages are passed between the parent and child windows with `window.postMessage`.
+
+GlueFrame works in IE8 and all modern browsers, and if your application is embedded on a page with the same protocol, domain and port, IE7 is supported too.
+
 Read the full documentation of GlueFrame on <a href="http://github.com/23/GlueFrame">http://github.com/23/GlueFrame</a>.
     
 # Examples and Dependencies
