@@ -50,7 +50,7 @@ proc concat_code {files output_filename {minify_type "none"}} {
     close $fd
 }
 
-proc css_inline_data_uris {css_filename {max_file_size_kb "8"}} {
+proc css_inline_data_uris {css_filename {max_file_size_kb "16"}} {
     package require base64
 
     set fd [open $css_filename r]
