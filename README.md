@@ -233,6 +233,18 @@ This method make for a rapid deployment process with optimized code, but it will
 And when you reference asset files in liquid, use `{{module.path}}` as a prefix:
 
     <img src="{{module.path}}info-icon.png" />
+
+# Interfacing with your Glue application with GlueFrame
+If you are embedding your application on a website and want to communicate with it, eg. call the application's getters and setters or add event listeners to events being fired inside the application, you can use <a href="http://github.com/23/GlueFrame">GlueFrame</a>. This library acts as a wrapper around the iframe that your application is embedded in and provides an event based interface for getting/setting properties and binding/firing events in your application:
+
+    <iframe src="http://example.com/app.html" id="myApp"></iframe>
+
+    <script type="text/javascript">
+      var myApp = new GlueFrame( document.getElementById("myApp"), "Player" );
+      myApp.set("playing", true);
+    </script>
+
+Read the full documentation of GlueFrame on <a href="http://github.com/23/GlueFrame">http://github.com/23/GlueFrame</a>.
     
 # Examples and Dependencies
 Glue was originally designed by [23](http://www.23company.com) as a foundation for building custom video players. The [repository for these players](https://github.com/23/player) serves as a good example of Glue in practice.

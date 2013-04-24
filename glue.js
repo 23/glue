@@ -220,6 +220,35 @@ var Glue = function(opts){
       throw "No setter for property '"+prop+"'";
     }
   }
+
+  /* GlueFrame */
+  $this.respond = function(response, source, origin) {
+    source.postMessage(JSON.stringify(response), origin);
+  };
+
+  $this.receiveMessage = function(e){
+    var data = JSON.parse(e.data);
+    var response;
+    if (data.f === "get" || data.f === "set" || data.f === "fire") {
+      response = { cbId: data.cbId, a: $this[data.f].apply(null, data.args) };
+    }
+    if (data.f === "bind") {
+      $this.bind(data.args[0], function(event,o){
+        var response = { cbId: data.cbId, a: event, b: o };
+        $this.respond( response, e.source, e.origin );
+      });
+    }
+    if (response !== undefined) {
+      $this.respond( response, e.source, e.origin );
+    }
+  };
+
+  if (window.addEventListener) {
+    window.addEventListener("message", $this.receiveMessage, false);
+  } else {
+    window.attachEvent("onmessage", $this.receiveMessage);
+  }
+
   
   /* SHORTCUTS TO SETTERS */
   $this.specialKeys = {'backspace': 8, 'tab': 9, 'enter': 13, 'pause': 19, 'capslock': 20, 'esc': 27, 'space': 32, 'pageup': 33, 'pagedown': 34, 'end': 35, 'home': 36, 'left': 37, 'up': 38, 'right': 39, 'down': 40, 'insert': 45, 'delete': 46, 'f1': 112, 'f2': 113, 'f3': 114, 'f4': 115, 'f5': 116, 'f6': 117, 'f7': 118, 'f8': 119, 'f9': 120, 'f10': 121, 'f11': 122, 'f12': 123, '?': 191};
