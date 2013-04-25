@@ -221,28 +221,31 @@ var Glue = function(opts){
     }
   }
 
-  /* GlueFrame */
+  /* GLUEFRAME */
+
+  // Respond to a message event
   $this.respond = function(response, source, origin) {
     source.postMessage(JSON.stringify(response), origin);
   };
-
+  // Parse received message
   $this.receiveMessage = function(e){
     var data = JSON.parse(e.data);
     var response;
     if (data.f === "get" || data.f === "set" || data.f === "fire") {
-      response = { cbId: data.cbId, a: $this[data.f].apply(null, data.args) };
+      response = {cbId:data.cbId, a:$this[data.f].apply(null, data.args)};
     }
     if (data.f === "bind") {
-      $this.bind(data.args[0], function(event,o){
-        var response = { cbId: data.cbId, a: event, b: o };
-        $this.respond( response, e.source, e.origin );
-      });
+      $this.bind(data.args[0], (function(source, origin, data){
+        return function(event,o){
+          $this.respond({cbId:data.cbId, a:event, b:o}, source, origin);
+        }
+      })(e.source, e.origin, data));
     }
     if (response !== undefined) {
       $this.respond( response, e.source, e.origin );
     }
   };
-
+  // Listen for message events
   if (window.addEventListener) {
     window.addEventListener("message", $this.receiveMessage, false);
   } else {
