@@ -48,6 +48,7 @@ var Glue = function(opts){
 
   /* MODULES */
   /* Call this to register a new module */
+  $this.bootstrapped = false;
   $this.providedModules = {};
   $this.modules = [];
   $this.provide = function(name,opts,f){
@@ -118,6 +119,10 @@ var Glue = function(opts){
                 }
 
                 $this.fire('glue:render', $(container));
+                if (!$this.bootstrapped) {
+                  $this.bootstrapped = true;
+                  $this.fire('glue:bootstrapped');
+                }
                 callback();
               });
           }
@@ -177,11 +182,19 @@ var Glue = function(opts){
 
   /* EVENTS */
   $this.events = {};
-  $this.bind = function(e,f){
+  $this.bind = function(e,f,q){
     $.each(e.split(' '), function(i,e){
         $this.events[e] = $this.events[e]||[];
         $this.events[e].push(f);
       });
+    // If q, check for matching past events in event queue
+    if (q) {
+      for (var i = 0; i < $this.queuedEvents.length; i += 1) {
+        if ($this.queuedEvents[i].e == e) {
+          f($this.queuedEvents[i].e,$this.queuedEvents[i].o);
+        }
+      }
+    }
   }
   $this.fire = function(e,o){
     $.each($this.events[e]||[], function(i,f){
@@ -193,6 +206,10 @@ var Glue = function(opts){
           $this.log('error', 'Error while firing ' + e + ': ' + err);
         }
       });
+    // Queue events that fires before the bootstrap module is rendered
+    if (!$this.queuedEventsProcessed) {
+      $this.queuedEvents.push({e:e,o:o});
+    }
     return o;
   }
 
@@ -222,7 +239,12 @@ var Glue = function(opts){
   }
 
   /* GLUEFRAME */
-
+  $this.queuedEvents = [];
+  $this.queuedEventsProcessed = false;
+  $this.setter("queuedEventsProcessed", function(p){
+    $this.queuedEventsProcessed = true;
+    $this.queuedEvents = [];
+  });
   // Respond to a message event
   $this.respond = function(response, source, origin) {
     source.postMessage(JSON.stringify(response), origin);
@@ -237,14 +259,29 @@ var Glue = function(opts){
     if (data.f === "bind") {
       $this.bind(data.args[0], (function(source, origin, data){
         return function(event,o){
-          $this.respond({cbId:data.cbId, a:event, b:o}, source, origin);
+          try {
+            $this.respond({cbId:data.cbId, a:event, b:o}, source, origin);
+          } catch(e) {
+            $this.respond({cbId:data.cbId, a:event}, source, origin);
+          }
         }
-      })(e.source, e.origin, data));
+      })(e.source, e.origin, data), data.triggerQueue);
     }
     if (response !== undefined) {
       $this.respond( response, e.source, e.origin );
     }
   };
+  $this.bind("glue:bootstrapped",function(){
+    // Tell parent frame that we're ready
+    $this.respond({ready: true}, parent, "*");
+    // Delete queued events if we don't hear back
+    window.setTimeout(function(){
+      if (!$this.queuedEventsProcessed) {
+        $this.queuedEventsProcessed = true;
+        $this.queuedEvents = [];
+      }
+    }, 5000);
+  });
   // Listen for message events
   if (window.addEventListener) {
     window.addEventListener("message", $this.receiveMessage, false);
