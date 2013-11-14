@@ -18,7 +18,7 @@ proc create_dev_html {name object bootstrapModule dir deps css js} {
 
 proc create_dist_html {name object bootstrapModule dir} {
     set fd [open [file join $dir "${name}.html"] w]
-    puts $fd "<!DOCTYPE html>\n<html>\n  <head>\n    <base target=\"_blank\">\n    <link rel=\"stylesheet\" type=\"text/css\" href=\"${name}.css.gz\" />\n    <script src=\"${name}.js.gz\"></script>\n  </head>\n  <body>\n    <script>\n      ${object}.use('${bootstrapModule}',{});\n    </script>\n    <noscript><p>You must enable JavaScript to view this content.</p></noscript>\n  </body>\n</html>"
+    puts $fd "<!DOCTYPE html>\n<html>\n  <head>\n    <base target=\"_blank\">\n    <link rel=\"stylesheet\" type=\"text/css\" href=\"${name}.css\" />\n    <script src=\"${name}.js\"></script>\n  </head>\n  <body>\n    <script>\n      ${object}.use('${bootstrapModule}',{});\n    </script>\n    <noscript><p>You must enable JavaScript to view this content.</p></noscript>\n  </body>\n</html>"
     close $fd
 }
 
@@ -181,8 +181,6 @@ concat_code [concat \
 set css_filename [file join $dist_dir "${name}.css"]
 concat_code $css_files $css_filename css
 css_inline_data_uris $css_filename
-exec gzip -c $css_filename > "${css_filename}.gz"
-exec gzip -c $js_filename > "${js_filename}.gz"
 create_dist_html $name $object $bootstrapModule $dist_dir
 
 # Development version
