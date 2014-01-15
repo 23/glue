@@ -108,13 +108,13 @@ var Glue = function(opts){
                   
                   // Handle simple click/enter/leave commands
                   $(container).find('*[click]').each(function(i,el){
-                    $(el).click({command:$(el).attr('click')}, _runCommand);
+                    $(el).click({command:$(el).attr('click')}, $this.runCommand);
                   });
                   $(container).find('*[enter]').each(function(i,el){
-                    $(el).mouseenter({command:$(el).attr('enter')}, _runCommand);
+                    $(el).mouseenter({command:$(el).attr('enter')}, $this.runCommand);
                   });
                   $(container).find('*[leave]').each(function(i,el){
-                    $(el).mouseleave({command:$(el).attr('leave')}, _runCommand);
+                    $(el).mouseleave({command:$(el).attr('leave')}, $this.runCommand);
                   });
                 }
 
@@ -150,7 +150,7 @@ var Glue = function(opts){
   }
 
   // Parse a string to run simple set/toggle commands
-  var _runCommand = function(e){
+  $this.runCommand = function(e){
     var d = e.data||e;
     $.each(d.command.split(';'), function(i,s){
         s = (s.trim ? s.trim() : s.replace(/^\s+|\s+$/g, ''));
