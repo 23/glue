@@ -275,6 +275,8 @@ var Glue = function(opts){
     }
   };
   $this.bind("glue:bootstrapped",function(){
+    // Tell parent frame that we're ready
+    $this.respond({ready: true}, parent, "*");
     // Delete queued events if they're not processed within 5 sec
     window.setTimeout(function(){
       if (!$this.queuedEventsProcessed) {
