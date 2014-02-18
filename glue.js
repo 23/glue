@@ -222,7 +222,7 @@ var Glue = function(opts){
     if($this.getters[prop]){
       return $this.getters[prop](prop,a,b,c,d);
     } else {
-      throw "No getter for property '"+prop+"'";
+      $this.log("No getter for property '"+prop+"'");
     }
   }
   $this.setters = {};
@@ -234,7 +234,7 @@ var Glue = function(opts){
     if($this.setters[prop]){
       return $this.setters[prop](value,prop);
     } else {
-      throw "No setter for property '"+prop+"'";
+      $this.log("No setter for property '"+prop+"'");
     }
   }
 
