@@ -131,6 +131,7 @@ var Glue = function(opts){
           
           // Set a class name for the container
           if(m&&m.container) {
+            m.container.addClass('glue-element');
             if(m.className) {
               m.container.addClass(m.className);
             } else {
