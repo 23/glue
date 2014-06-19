@@ -188,6 +188,47 @@ You can attach multiple shortcuts, and the actual shortcut being used will be us
 
 Apart from standard keys you can use the following key modifiers: `backspace`, `tab`, `enter`, `pause`, `capslock`, `esc`, `space`, `pageup`, `pagedown`, `end`, `home`, `left`, `up`, `right`, `down`, `insert`, `delete`, `f1`, `f2`, `f3`, `f4`, `f5`, `f6`, `f7`, `f8`, `f9`, `f10`, `f11` and `f12`.
 
+# Internationalization
+
+You can make your application accessible in multiple languages and serve the application to your users in a specified or automatically detected language. Say you have a module template looking like this:
+
+    <p><a href="/competition">Click here</a> to enter the competition.</p>
+
+This template can be be internationalized in two steps:
+
+1. Use your application object's `translate` method to register each piece of text as a lookup key and an object of translations:
+
+    App.translate("click_here",{
+        en: "Click here",
+        da: "Klik her"
+    });
+    App.translate("to_enter",{
+        en: "to enter the competition.",
+        da: "for at deltage i konkurrencen."
+    });
+
+2. Replace the text strings in your template with the lookup keys that you defined in step 1, and apply the `translate` filter on each of them:
+
+    <p><a href="/competition">{{"click_here"|translate}}</a> {{"to_enter"|translate}}</p>
+
+From here, your application will automatically search for the lookup keys in the internal dictionary and insert the corresponding translation.
+
+Please note that if your are manipulating the DOM directly (as opposed to rendering module templates), you have access to the same functionality. Simply call the `translate` method with a lookup key as the single argument, and the corresponding translation will be returned:
+
+    $("#headline").html( App.translate("my_headline_text") );
+
+When the application searches for translations, it will try to detect the user's preferred language as determined by the settings in the user's browser. If no translation for that language is found for a key, it will fall back to searching for a translation in the default language (English). You can change which language should be used as default by calling the `setDefaultLocale` method:
+
+    // Set the default language to Danish
+    App.setDefaultLocale("da");
+
+If you do not want your application to automatically detect the language of your users, you can overwrite this behaviour by manually specifying a locale:
+
+    // Set language to Danish and ignore the automatically detected language
+    App.setLocale("da");
+
+To ensure cross-browser compatibility, the language keys available are limited to the two-letter primary language subtags as defined in <a href="http://tools.ietf.org/html/rfc4646#section-2.2.1">RFC 4646</a>.
+When the language changes (either through `setLocale` or through automatic detection), the event `glue:localechange` is fired, and you can bind event listeners to this event if you have modules that need to be re-rendered when the language changes.
 
 # Building the application with manifests
 

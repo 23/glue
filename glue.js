@@ -342,6 +342,56 @@ var Glue = function(opts){
     });
   });
 
+  /* TRANSLATIONS */
+  var defaultLocale = "en";
+  $this.setDefaultLocale = function(locale){
+    defaultLocale = locale.substring(0,2);
+  };
+  var language = "en";
+  // Use navigator.language in browsers and navigator.browserLanguage in <IE11
+  if(typeof navigator != "undefined" && typeof navigator.language != "undefined"){
+    language = (""+navigator.language).substring(0,2);
+  }else if(typeof navigator != "undefined" && typeof navigator.browserLanguage != "undefined"){
+    language = (""+navigator.browserLanguage).substring(0,2);
+  }
+  $this.fire("glue:localechange", language);
+  $this.setLocale = function(locale){
+    if(locale != language){
+      language = locale;
+      $this.fire("glue:localechange", language);
+    }
+  };
+  var translations = {};
+  $this.translate = function(key, newTranslations){
+    if(typeof newTranslations === "object"){
+      // Add the new translations to our translations object
+      if(typeof translations[key] != "undefined"){
+        $.extend(translations[key], newTranslations);
+      }else{
+        translations[key] = newTranslations;
+      }
+      return translations;
+    }else if(typeof translations[key] != "undefined"){
+      // We have a translation for this key
+      if(typeof translations[key][language] != "undefined"){
+        // Return the preferred translation
+        return translations[key][language];
+      }else if(typeof translations[key][defaultLocale] != "undefined"){
+        // Return default locale translation
+        return translations[key][defaultLocale];
+      }else{
+        // There is no translation for default locale, return any translation
+        return translations[Object.keys(translations[key])[0]];
+      }
+    }
+    // No translations for this key
+    return key;
+  };
+
+  Liquid.Template.registerFilter({
+    translate: $this.translate
+  });
+
   /* BOOTSTRAPPING */
   $this.settings = $.extend({}, $this.parameters);
 
