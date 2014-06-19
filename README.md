@@ -194,22 +194,22 @@ You can make your application accessible in multiple languages and serve the app
 
     <p><a href="/competition">Click here</a> to enter the competition.</p>
 
-This template can be be internationalized in two steps:
+This template can be internationalized in two steps:
 
 1. Use your application object's `translate` method to register each piece of text as a lookup key and an object of translations:
 
-    App.translate("click_here",{
-        en: "Click here",
-        da: "Klik her"
-    });
-    App.translate("to_enter",{
-        en: "to enter the competition.",
-        da: "for at deltage i konkurrencen."
-    });
+        App.translate("click_here",{
+            en: "Click here",
+            da: "Klik her"
+        });
+        App.translate("to_enter",{
+            en: "to enter the competition.",
+            da: "for at deltage i konkurrencen."
+        });
 
 2. Replace the text strings in your template with the lookup keys that you defined in step 1, and apply the `translate` filter on each of them:
 
-    <p><a href="/competition">{{"click_here"|translate}}</a> {{"to_enter"|translate}}</p>
+        <p><a href="/competition">{{"click_here"|translate}}</a> {{"to_enter"|translate}}</p>
 
 From here, your application will automatically search for the lookup keys in the internal dictionary and insert the corresponding translation.
 
