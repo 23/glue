@@ -361,27 +361,27 @@ var Glue = function(opts){
       $this.fire("glue:localechange", language);
     }
   };
-  var translations = {};
+  $this.translations = {};
   $this.translate = function(key, newTranslations){
     if(typeof newTranslations === "object"){
       // Add the new translations to our translations object
-      if(typeof translations[key] != "undefined"){
-        $.extend(translations[key], newTranslations);
+      if(typeof $this.translations[key] != "undefined"){
+        $.extend($this.translations[key], newTranslations);
       }else{
-        translations[key] = newTranslations;
+        $this.translations[key] = newTranslations;
       }
-      return translations;
-    }else if(typeof translations[key] != "undefined"){
+      return $this.translations;
+    }else if(typeof $this.translations[key] != "undefined"){
       // We have a translation for this key
-      if(typeof translations[key][language] != "undefined"){
+      if(typeof $this.translations[key][language] != "undefined"){
         // Return the preferred translation
-        return translations[key][language];
-      }else if(typeof translations[key][defaultLocale] != "undefined"){
+        return $this.translations[key][language];
+      }else if(typeof $this.translations[key][defaultLocale] != "undefined"){
         // Return default locale translation
-        return translations[key][defaultLocale];
+        return $this.translations[key][defaultLocale];
       }else{
         // There is no translation for default locale, return any translation
-        return translations[Object.keys(translations[key])[0]];
+        return $this.translations[Object.keys(translations[key])[0]];
       }
     }
     // No translations for this key
