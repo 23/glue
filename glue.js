@@ -381,7 +381,7 @@ var Glue = function(opts){
         return $this.translations[key][defaultLocale];
       }else{
         // There is no translation for default locale, return any translation
-        return $this.translations[Object.keys(translations[key])[0]];
+        return $this.translations[key][Object.keys($this.translations[key])[0]];
       }
     }
     // No translations for this key
