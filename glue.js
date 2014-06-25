@@ -13,7 +13,7 @@
   - glue:render
   - glue:added
 */
-if(!console){var console = {log:function(){},debug:function(){}}}
+if(!window.console){window.console = {log:function(){},debug:function(){}};}
 
 var Glue = function(opts){
   if( typeof(Liquid)=='undefined' ) {
