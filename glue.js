@@ -204,7 +204,7 @@ var Glue = function(opts){
           var ret = f(e,o);
           if(typeof(ret)!='undefined') o = ret;
         }catch(err){
-          $this.log('error', 'Error while firing ' + e + ': ' + err);
+          $this.log('error', 'Error while firing ' + e + ': ' + err.stack);
         }
       });
     // Queue events that fires before the bootstrap module is rendered
