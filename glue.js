@@ -335,6 +335,14 @@ var Glue = function(opts){
           break;
         }
       });
+      // Check for non-matching modifiers
+      if(matched){
+        if( (e.ctrlKey && $.inArray('ctrl',shortcut)<0) ||
+            (e.altKey && $.inArray('alt',shortcut)<0) ||
+            (e.metaKey && $.inArray('meta',shortcut)<0) ){
+          matched = false;
+        }
+      }
       if(matched) {
         $this.setters[prop](shortcut);
         e.preventDefault();
