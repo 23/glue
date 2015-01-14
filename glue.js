@@ -323,6 +323,9 @@ var Glue = function(opts){
         case 'alt':
           matched = matched && e.altKey;
           break;
+        case 'shift':
+          matched = matched && e.shiftKey;
+          break;
         case 'meta':
           matched = matched && e.metaKey;
           break;
@@ -339,6 +342,7 @@ var Glue = function(opts){
       if(matched){
         if( (e.ctrlKey && $.inArray('ctrl',shortcut)<0) ||
             (e.altKey && $.inArray('alt',shortcut)<0) ||
+            (e.shiftKey && $.inArray('shift',shortcut)<0) ||
             (e.metaKey && $.inArray('meta',shortcut)<0) ){
           matched = false;
         }
