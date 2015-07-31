@@ -40,7 +40,12 @@ proc concat_code {files output_filename {minify_type "none"}} {
     set content [join $content "\n\n"]
 
     if { $minify_type eq "js" || $minify_type eq "css" } {
-        set tok [http::geturl "http://reducisaurus.appspot.com/${minify_type}" -timeout 30000 -query [http::formatQuery file $content]]
+	if { $minify_type eq "css" } {
+	    set url "http://cssminifier.com/raw"
+	} else {
+	    set url "http://javascript-minifier.com/raw"
+	}
+        set tok [http::geturl $url -timeout 30000 -query [http::formatQuery input $content]]
         set content [http::data $tok]
         http::cleanup $tok
     }
@@ -57,7 +62,7 @@ proc css_inline_data_uris {css_filename {max_file_size_kb "16"}} {
     set css [read $fd]
     close $fd
     set css_folder [file dirname $css_filename]
-    
+
     foreach match [regexp -all -inline {[a-z\-]+\s*:[^;\{\}]+} $css] {
         if { [regexp {^(.+)url\([\'\"]?([^\)\'\"]+)[\'\"]?\)(.*)$} $match ignore before filename after] } {
             set filename [string map [list ".." "" "/" ""] $filename]
@@ -90,7 +95,7 @@ proc css_inline_data_uris {css_filename {max_file_size_kb "16"}} {
             catch {unset mime_type}
         }
     }
-    
+
     set fd [open $css_filename w]
     puts $fd $css
     close $fd
