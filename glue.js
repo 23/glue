@@ -473,7 +473,7 @@ var Glue = function(opts){
         });
       _stubReplacerRunning = false;
     } else {
-      window.setTimeout(function(){$this.stubReplace(1);}, 500);
+      window.setTimeout(function(){$this.stubReplace(1);}, 20);
     }
   }
   var glueTag = Liquid.Tag.extend({
