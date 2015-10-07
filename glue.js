@@ -185,28 +185,35 @@ var Glue = function(opts){
   $this.events = {};
   $this.bind = function(e,f,q){
     $.each(e.split(' '), function(i,e){
-        $this.events[e] = $this.events[e]||[];
-        $this.events[e].push(f);
-      });
+      $this.events[e] = $this.events[e] || {
+        // "*" serves as wildcard in event names
+        "rule": new RegExp("^" + e.replace("*", ".*") + "$"),
+        "handlers": []
+      };
+      $this.events[e]["handlers"].push(f);
+    });
     // If q, check for matching past events in event queue
     if (q) {
       for (var i = 0; i < $this.queuedEvents.length; i += 1) {
-        if ($this.queuedEvents[i].e == e) {
+        if ($this.events[e].rule.test($this.queuedEvents[i].e)) {
           f($this.queuedEvents[i].e,$this.queuedEvents[i].o);
         }
       }
     }
   }
   $this.fire = function(e,o){
-    $.each($this.events[e]||[], function(i,f){
-        //$this.profile(e);
-        try {
-          var ret = f(e,o);
-          if(typeof(ret)!='undefined') o = ret;
-        }catch(err){
-          $this.log('error', 'Error while firing ' + e + ': ' + err.stack||err);
-        }
-      });
+    $.each($this.events, function(eventName, eventObj){
+      if(eventObj.rule.test(e)){
+        $.each(eventObj.handlers, function(i,f){
+          try {
+            var ret = f(e,o);
+            if(typeof(ret)!='undefined') o = ret;
+          }catch(err){
+            $this.log('error', 'Error while firing ' + e + ': ' + err.stack||err);
+          }
+        });
+      }
+    });
     // Queue events that fires before the bootstrap module is rendered
     if (!$this.queuedEventsProcessed) {
       $this.queuedEvents.push({e:e,o:o});
