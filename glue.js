@@ -187,7 +187,7 @@ var Glue = function(opts){
     $.each(e.split(' '), function(i,e){
       $this.events[e] = $this.events[e] || {
         // "*" serves as wildcard in event names
-        "rule": new RegExp("^" + e.replace("*", ".*") + "$"),
+        "rule": e.indexOf('*') > -1 ? new RegExp("^" + e.replace("*", ".*") + "$") : e,
         "handlers": []
       };
       $this.events[e]["handlers"].push(f);
@@ -203,7 +203,7 @@ var Glue = function(opts){
   }
   $this.fire = function(e,o){
     $.each($this.events, function(eventName, eventObj){
-      if(eventObj.rule.test(e)){
+      if(typeof eventObj.rule == "string" ? eventObj.rule == e : eventObj.rule.test(e)){
         $.each(eventObj.handlers, function(i,f){
           try {
             var ret = f(e,o);
