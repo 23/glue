@@ -124,8 +124,8 @@ set bootstrapModule [dict get $manifest bootstrapModule]
 # Dependencies
 set glueLocation [dict get $manifest glueLocation]
 set glueDependencies [list \
-                          "http://code.jquery.com/jquery-1.11.0.min.js" \
-                          "http://admin.23video.com/resources/um/script/kickem/liquid.ymin.js" \
+                          "https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js" \
+                          "https://admin.23video.com/resources/um/script/kickem/liquid.ymin.js" \
                           [file join $glueLocation "glue.js"] \
                          ]
 set dependencies [concat $glueDependencies [dict get $manifest dependencies]]
