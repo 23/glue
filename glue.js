@@ -70,16 +70,25 @@ var Glue = function(opts){
           // Load the module
           var coreModule = $this.providedModules[name];
           var relativePath = (typeof(GLUEDEV)!='undefined' ? name+'/' : './');
-          var m = new coreModule[1]($this,$,$.extend({_id:$this.modules.length, moduleName:name, path:relativePath, container:moduleContainer, _initRender:[], render:function(){this._initRender=[arguments[0], arguments[1], arguments[2]];}},coreModule[0],properties));
+          var m = new coreModule[1]($this,$, $.extend({
+            _id: $this.modules.length,
+            moduleName: name,
+            path: relativePath,
+            container: moduleContainer,
+            _initRender: [], // Array to store calls to m.render() before we're ready
+            render: function(){
+              this._initRender.push(arguments);
+            }
+          }, coreModule[0], properties));
           // The module is loaded, allow for rendering
-          m.render = function(callback, path, container){
+          m.render = function(callback, path, container, ctx){
             callback = callback||function(){};
             path = $this.loadPath+(path||m.moduleName+'/'+m.moduleName+'.liquid');
             container = container||moduleContainer;
             $this.readLiquidFile(path, function(tmpl){
                 var currentHTML = $(container).html();
-                var html = tmpl.render({module:m}).replace(/\s+$/,'').replace(/^\s+/,'');
-
+                tmpl.assigns = {}; // Delete any previous context that may have been cached
+                var html = tmpl.render($.extend({module:m},ctx), undefined, {}).replace(/\s+$/,'').replace(/^\s+/,'');
                 if(html!=currentHTML) {
                   if(currentHTML=='' && html!='' && m.showAnimation) {
                     // Animate from nothing to something
@@ -126,8 +135,10 @@ var Glue = function(opts){
                 callback();
               });
           }
-          // ... and then render is m.render() was called during initiation
-          if(m._initRender.length>0) m.render(m._initRender[0], m._initRender[1], m._initRender[2]);
+          // If m.render() was called during initiation, make those calls now
+          for(var i = 0; i < m._initRender.length; i += 1){  
+            m.render.apply(null, m._initRender[i]);
+          }
           
           // Set a class name for the container
           if(m&&m.container) {
