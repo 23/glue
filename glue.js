@@ -516,11 +516,16 @@ var Glue = function(opts){
   if($this.alias) Liquid.Template.registerTag($this.alias, glueTag);
 
   // SUPPORT GLUE GETTER VARS IN LIQUID
-  Liquid.Context.prototype.get = function(varname) {
-    var ret = this.resolve(varname);
-    try {if(ret==null) ret = $this.get(varname);}catch(e){};
+  var findVariablePrototype = Liquid.Context.prototype.findVariable;
+  Liquid.Context.prototype.findVariable = function(varname){
+    // Let Liquid try to resolve variable..
+    var ret = findVariablePrototype.apply(this, arguments);
+    if(ret==null){
+      // ..if unsuccessfully, try a getter
+      try{ ret = $this.get(varname); }catch(e){}
+    }
     return ret;
-  }
+  };
 
   return $this;
 };
