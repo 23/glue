@@ -187,18 +187,21 @@ var Glue = function(opts){
     $.each(e.split(' '), function(i,e){
       $this.events[e] = $this.events[e] || {
         // "*" serves as wildcard in event names
-        "rule": e.indexOf('*') > -1 ? new RegExp("^" + e.replace("*", ".*") + "$") : e,
+        "rule": e.indexOf('*') > -1 ? new RegExp("^" + e.replace(/\*/g, ".*") + "$") : e,
         "handlers": []
       };
       $this.events[e]["handlers"].push(f);
     });
     // If q, check for matching past events in event queue
     if (q) {
-      for (var i = 0; i < $this.queuedEvents.length; i += 1) {
-        if ($this.events[e].rule.test($this.queuedEvents[i].e)) {
-          f($this.queuedEvents[i].e,$this.queuedEvents[i].o);
+      $.each(e.split(' '),function(i,e){
+        var rule = $this.events[e].rule;
+        for (var i = 0; i < $this.queuedEvents.length; i += 1) {
+          if (typeof rule == "string" ? rule == $this.queuedEvents[i].e : rule.test($this.queuedEvents[i].e)) {
+            f($this.queuedEvents[i].e,$this.queuedEvents[i].o);
+          }
         }
-      }
+      });
     }
   }
   $this.fire = function(e,o){
