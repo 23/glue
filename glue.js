@@ -51,7 +51,9 @@ var Glue = function(opts){
   $this.bootstrapped = false;
   $this.providedModules = {};
   $this.modules = [];
-  $this.provide = function(name,opts,f){
+  $this.provide = function(name,opts,f,overwrite){
+    if(typeof(overwrite)=='undefined') overwrite=true;
+    if($this.providedModules[name] && !overwrite) return;
     opts = opts||{};
     $this.providedModules[name] = [opts,f];
   }
