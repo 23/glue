@@ -278,8 +278,13 @@ var Glue = function(opts){
   };
   // Parse received message
   $this.receiveMessage = function(e){
-    var data = JSON.parse(e.data);
-    var response;
+    var data, response;
+    try {
+      data = JSON.parse(e.data);
+    } catch(e) {
+      // If the data cannot be parsed to JSON, ignore the message
+      return;
+    }
     if (data.f === "get" || data.f === "set" || data.f === "fire") {
       response = {cbId:data.cbId, a:$this[data.f].apply(null, data.args)};
     }
