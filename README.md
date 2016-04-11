@@ -114,7 +114,7 @@ The Glue library itself fires two different events:
 * Every time a template has been (re-)rendered, `glue:render` is fired.
 
 # Liquid Templates
-Module templates are a combination of HTML and Liquid Markup. Liquid is a safe HTML markup language, originally [developed for Rails and Shopify](http://liquidmarkup.org/) -- but also used to customize our own [23 Video](http://help.23video.com/customer/portal/articles/586745-introduction-to-liquid). It makes it easy for designers to build conditional templates and to build designs using variables. 
+Module templates are a combination of HTML and Liquid Markup. Liquid is a safe HTML markup language, originally [developed for Rails and Shopify](http://liquidmarkup.org/) -- but also used to customize our own [TwentyThree video marketing platform](https://www.twentythree.net/help/design/introduction-to-liquid). It makes it easy for designers to build conditional templates and to build designs using variables. 
 
 Any getter property from any module is available to liquid templates (as we also saw above):
 
@@ -292,6 +292,6 @@ GlueFrame works in IE8 and all modern browsers, and if your application is embed
 Read the full documentation of GlueFrame on <a href="http://github.com/23/GlueFrame">http://github.com/23/GlueFrame</a>.
     
 # Examples and Dependencies
-Glue was originally designed by [23](http://www.23company.com) as a foundation for building custom video players. The [repository for these players](https://github.com/23/player) serves as a good example of Glue in practice.
+Glue was originally designed by [TwentyThree](https://www.twentythree.net) as a foundation for building custom video players. The [repository for these players](https://github.com/23/player) serves as a good example of Glue in practice.
 
 Glue is built on top of [jQuery](http://jquery.com/) and [Liquid.js](https://github.com/darthapo/liquid.js), although for the latter we use [our own fork](https://github.com/23/liquid.js) by default.
