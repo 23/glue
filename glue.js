@@ -23,6 +23,8 @@ var Glue = function(opts){
   var $ = jQuery;
   var $this = this;
 
+  $this.revision = 1;
+
   /* ADDITIONAL OPTIONS */
   opts=opts||{};
   $this.alias = opts.alias||null;
@@ -65,6 +67,7 @@ var Glue = function(opts){
           $this.log('error', "Module '" + name + "' doesn't exist");
           return;
         }
+        $this.fire('glue:beforeuse', name);
         try {
           $this.log('debug', 'Loading', name);
           // Create a default container for the module
@@ -156,6 +159,7 @@ var Glue = function(opts){
           // Finally, save the status
           $this.modules.push(m);
           ret.push(m);
+          $this.fire("glue:used", m);
         }catch(err){
           $this.log('error', "Module '" + name + "' could not be loaded", err);
         }
