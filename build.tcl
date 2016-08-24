@@ -26,29 +26,34 @@ proc concat_code {files output_filename {minify_type "none"}} {
     set content [list]
     foreach _ $files {
         if { [regexp {^https?://} $_] } {
+            puts "Downloading file from $_"
             set tok [http::geturl $_]
-            lappend content [http::data $tok]
+            set tmp_content [http::data $tok]
             http::cleanup $tok
         } elseif { [file exists $_] } {
+            puts "Using local code from $_"
             set fd [open $_ r]
-            lappend content [read $fd]
+            set tmp_content [read $fd]
             close $fd
         } else {
-            lappend content $_
+            puts "Using inline code"
+            set tmp_content $_
         }
+
+        if { ![regexp {\.min.(js|css)$} $_] && ($minify_type eq "js" || $minify_type eq "css") } {
+            puts " --> minifying"
+            if { $minify_type eq "css" } {
+                set url "http://cssminifier.com/raw"
+            } else {
+                set url "http://javascript-minifier.com/raw"
+            }
+            set tok [http::geturl $url -timeout 30000 -query [http::formatQuery input $tmp_content]]
+            set tmp_content [http::data $tok]
+            http::cleanup $tok
+        }
+        lappend content $tmp_content
     }
     set content [join $content "\n\n"]
-
-    if { $minify_type eq "js" || $minify_type eq "css" } {
-	if { $minify_type eq "css" } {
-	    set url "http://cssminifier.com/raw"
-	} else {
-	    set url "http://javascript-minifier.com/raw"
-	}
-        set tok [http::geturl $url -timeout 30000 -query [http::formatQuery input $content]]
-        set content [http::data $tok]
-        http::cleanup $tok
-    }
 
     set fd [open $output_filename w]
     puts $fd $content
@@ -124,8 +129,8 @@ set bootstrapModule [dict get $manifest bootstrapModule]
 # Dependencies
 set glueLocation [dict get $manifest glueLocation]
 set glueDependencies [list \
-                          "https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js" \
-                          "https://admin.23video.com/resources/um/script/kickem/liquid.ymin.js" \
+                          "http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js" \
+                          "http://admin.23video.com/resources/um/script/kickem/liquid.ymin.js" \
                           [file join $glueLocation "glue.js"] \
                          ]
 set dependencies [concat $glueDependencies [dict get $manifest dependencies]]
