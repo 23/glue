@@ -1,14 +1,21 @@
 #!/usr/bin/tclsh
 package require json
-package require http
-package require tls
-::http::register https 443 ::tls::socket
 
 proc create_dev_html {name object bootstrapModule dir deps css js} {
     set _css [list]
     foreach _ $css {lappend _css "    <link rel=\"stylesheet\" type=\"text/css\" href=\"${_}\" />"}
     set _deps [list]
-    foreach _ $deps {if {[string match {.*} $_]} {set _ "../${_}"}; lappend _deps "    <script src=\"${_}\"></script>"}
+    foreach _ $deps {
+        if { [string match {.*} $_] } {
+            set _ "../${_}"
+        }
+        if { [regexp {^https?://} $_] } {
+            set sri_hash [sri_hash $_]
+            lappend _deps "    <script src=\"${_}\" integrity=\"${sri_hash}\" crossorigin=\"anonymous\"></script>"
+        } else {
+            lappend _deps "    <script src=\"${_}\"></script>"
+        }
+    }
     set _js [list]
     foreach _ $js {lappend _js "    <script src=\"${_}\"></script>"}
     set fd [open [file join $dir "${name}.html"] w]
@@ -22,14 +29,17 @@ proc create_dist_html {name object bootstrapModule dir} {
     close $fd
 }
 
+proc sri_hash {url} {
+    set hash [exec curl -s $url | openssl dgst -sha384 -binary | openssl base64 -A]
+    return "sha384-${hash}"
+}
+
 proc concat_code {files output_filename {minify_type "none"}} {
     set content [list]
     foreach _ $files {
         if { [regexp {^https?://} $_] } {
             puts "Downloading file from $_"
-            set tok [http::geturl $_]
-            set tmp_content [http::data $tok]
-            http::cleanup $tok
+            set tmp_content [exec curl -s $_]
         } elseif { [file exists $_] } {
             puts "Using local code from $_"
             set fd [open $_ r]
@@ -43,13 +53,11 @@ proc concat_code {files output_filename {minify_type "none"}} {
         if { ![regexp {\.min.(js|css)$} $_] && ($minify_type eq "js" || $minify_type eq "css") } {
             puts " --> minifying"
             if { $minify_type eq "css" } {
-                set url "http://cssminifier.com/raw"
+                set url "https://www.toptal.com/developers/cssminifier/raw"
             } else {
-                set url "http://javascript-minifier.com/raw"
+                set url "https://www.toptal.com/developers/javascript-minifier/raw"
             }
-            set tok [http::geturl $url -timeout 30000 -query [http::formatQuery input $tmp_content]]
-            set tmp_content [http::data $tok]
-            http::cleanup $tok
+            set tmp_content [exec curl -X POST -s --data-urlencode $tmp_content $url]
         }
         lappend content $tmp_content
     }
@@ -129,8 +137,8 @@ set bootstrapModule [dict get $manifest bootstrapModule]
 # Dependencies
 set glueLocation [dict get $manifest glueLocation]
 set glueDependencies [list \
-                          "http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js" \
-                          "http://admin.23video.com/resources/um/script/kickem/liquid.ymin.js" \
+                          "https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js" \
+                          "https://admin.23video.com/resources/um/script/kickem/liquid.ymin.js" \
                           [file join $glueLocation "glue.js"] \
                          ]
 set dependencies [concat $glueDependencies [dict get $manifest dependencies]]
