@@ -9,7 +9,7 @@ proc create_dev_html {name object bootstrapModule dir deps css js} {
         if { [string match {.*} $_] } {
             set _ "../${_}"
         }
-        if { [regexp {^https?://} $_] } {
+        if { [regexp {^https?://} $_] && ![regexp {//admin.23video.com} $_] } {
             set sri_hash [sri_hash $_]
             lappend _deps "    <script src=\"${_}\" integrity=\"${sri_hash}\" crossorigin=\"anonymous\"></script>"
         } else {
@@ -34,38 +34,43 @@ proc sri_hash {url} {
     return "sha384-${hash}"
 }
 
-proc concat_code {files output_filename {minify_type "none"}} {
+proc concat_code {files output_filename dir {minify_type "none"}} {
     set content [list]
     foreach _ $files {
         if { [regexp {^https?://} $_] } {
             puts "Downloading file from $_"
             set tmp_content [exec curl -s $_]
-        } elseif { [file exists $_] } {
-            puts "Using local code from $_"
-            set fd [open $_ r]
+        } elseif { [file exists [set joined_filename [file join $dir $_]]] } {
+            puts "Using local code from $joined_filename"
+            set fd [open $joined_filename r]
             set tmp_content [read $fd]
             close $fd
         } else {
             puts "Using inline code"
             set tmp_content $_
         }
-
-        if { ![regexp {\.min.(js|css)$} $_] && ($minify_type eq "js" || $minify_type eq "css") } {
-            puts " --> minifying"
-            if { $minify_type eq "css" } {
-                set url "https://www.toptal.com/developers/cssminifier/raw"
-            } else {
-                set url "https://www.toptal.com/developers/javascript-minifier/raw"
-            }
-            set tmp_content [exec curl -X POST -s --data-urlencode $tmp_content $url]
-        }
         lappend content $tmp_content
     }
-    set content [join $content "\n\n"]
-
     set fd [open $output_filename w]
-    puts $fd $content
+    puts $fd [join $content "\n\n"]
     close $fd
+
+    if { ![regexp {\.min.(js|css)$} $_] && ($minify_type eq "js" || $minify_type eq "css") } {
+        puts " --> minifying ${minify_type}"
+        if { $minify_type eq "css" } {
+            if { [catch {
+                exec cssmin < $output_filename > $output_filename
+            } err] } {
+                puts "     (minifying failed: $err)"
+            }
+        } else {
+            if { [catch {
+                exec jsmin --overwrite $output_filename
+            } err] } {
+                puts "     (minifying failed: $err)"
+            }
+        }
+    }
 }
 
 proc css_inline_data_uris {css_filename {max_file_size_kb "16"}} {
@@ -195,9 +200,9 @@ concat_code [concat \
                  [list "var ${object} = new Glue({alias:'${name}'});"] \
                  $liquid_script \
                  $js_files \
-                ] $js_filename js
+                ] $js_filename $manifest_dir js
 set css_filename [file join $dist_dir "${name}.css"]
-concat_code $css_files $css_filename css
+concat_code $css_files $css_filename $manifest_dir css
 css_inline_data_uris $css_filename
 create_dist_html $name $object $bootstrapModule $dist_dir
 

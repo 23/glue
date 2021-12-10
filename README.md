@@ -259,6 +259,12 @@ A manifest file is a piece of JSON specifying the glue version, its object names
 
 In this case our application name is `player` and the core glue object is `Player. We will load a few dependencies from either local files or URLs. The bootstrap module is `design` — and `design`, `core`, `analytics` and `info` will all be available to load.
 
+Building uses `cssmin` and `jsmin` to optionally minify, well, css and js code. To have these dependencies in place, install:
+
+    npm i cssmin -g
+    npm i jsmin -g
+
+
 To build the application, place all modules in folder with `src/` and then run:
  
      ../glue/build.tcl manifest.json
