@@ -19,13 +19,13 @@ proc create_dev_html {name object bootstrapModule dir deps css js} {
     set _js [list]
     foreach _ $js {lappend _js "    <script src=\"${_}\"></script>"}
     set fd [open [file join $dir "${name}.html"] w]
-    puts $fd "<!DOCTYPE html>\n<html>\n  <head>\n    <script>var GLUEDEV=true;</script>\n    <base target=\"_blank\">\n\n    <!-- Module stylesheets -->\n[join $_css \n]\n\n    <!-- Glue, jQuery, Liquid,js and other dependencies -->\n[join $_deps \n]\n\n    <!-- Bootstrap the Glue object and all modules -->\n    <script>var ${object} = new Glue({alias:'${name}'});</script>\n[join $_js \n]\n  </head>\n  <body>\n    <script>\n      ${object}.use('${bootstrapModule}',{});\n    </script>\n    <noscript><p>You must enable JavaScript to view this content.</p></noscript>\n  </body>\n</html>"
+    puts $fd "<!DOCTYPE html>\n<html>\n  <head>\n    <meta name=\"viewport\" content=\"height=device-height,width=device-width,initial-scale=1.0,user-scalable=no\" />\n    <script>var GLUEDEV=true;</script>\n    <base target=\"_blank\">\n\n    <!-- Module stylesheets -->\n[join $_css \n]\n\n    <!-- Glue, jQuery, Liquid,js and other dependencies -->\n[join $_deps \n]\n\n    <!-- Bootstrap the Glue object and all modules -->\n    <script>var ${object} = new Glue({alias:'${name}'});</script>\n[join $_js \n]\n  </head>\n  <body>\n    <script>\n      ${object}.use('${bootstrapModule}',{});\n    </script>\n    <noscript><p>You must enable JavaScript to view this content.</p></noscript>\n  </body>\n</html>"
     close $fd
 }
 
 proc create_dist_html {name object bootstrapModule dir} {
     set fd [open [file join $dir "${name}.html"] w]
-    puts $fd "<!DOCTYPE html>\n<html>\n  <head>\n    <base target=\"_blank\">\n    <link rel=\"stylesheet\" type=\"text/css\" href=\"${name}.css\" />\n    <script src=\"${name}.js\"></script>\n  </head>\n  <body>\n    <script>\n      ${object}.use('${bootstrapModule}',{});\n    </script>\n    <noscript><p>You must enable JavaScript to view this content.</p></noscript>\n  </body>\n</html>"
+    puts $fd "<!DOCTYPE html>\n<html>\n  <head>\n    <base target=\"_blank\">\n    <meta name=\"viewport\" content=\"height=device-height,width=device-width,initial-scale=1.0,user-scalable=no\" />\n    <link rel=\"stylesheet\" type=\"text/css\" href=\"${name}.css\" />\n    <script src=\"${name}.js\"></script>\n  </head>\n  <body>\n    <script>\n      ${object}.use('${bootstrapModule}',{});\n    </script>\n    <noscript><p>You must enable JavaScript to view this content.</p></noscript>\n  </body>\n</html>"
     close $fd
 }
 
@@ -59,7 +59,8 @@ proc concat_code {files output_filename dir {minify_type "none"}} {
         puts " --> minifying ${minify_type}"
         if { $minify_type eq "css" } {
             if { [catch {
-                exec cssmin < $output_filename > $output_filename
+                exec cssmin $output_filename > /tmp/glue-build-css-temp
+                file copy -force /tmp/glue-build-css-temp $output_filename
             } err] } {
                 puts "     (minifying failed: $err)"
             }
@@ -141,12 +142,20 @@ set bootstrapModule [dict get $manifest bootstrapModule]
 
 # Dependencies
 set glueLocation [dict get $manifest glueLocation]
-set glueDependencies [list \
-                          "https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js" \
-                          "https://admin.23video.com/resources/um/script/kickem/liquid.ymin.js" \
-                          [file join $glueLocation "glue.js"] \
-                         ]
-set dependencies [concat $glueDependencies [dict get $manifest dependencies]]
+set dependencies [dict get $manifest dependencies]
+if { ![dict exists $manifest hasGlueDependencies] || ![dict get $manifest hasGlueDependencies] } {
+    set glueDependencies [list \
+                              "https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js" \
+                              "https://admin.23video.com/resources/um/script/kickem/liquid.ymin.js" \
+                              [file join $glueLocation "glue.js"] \
+                             ]
+    set dependencies [concat $glueDependencies $dependencies]
+}
+if { [dict exists $manifest buildDependencies] } {
+    set build_dependencies [dict get $manifest buildDependencies]
+} else {
+    set build_dependencies $dependencies
+}
 
 # Modules
 set modules [dict get $manifest modules]
@@ -196,7 +205,7 @@ foreach _ $other_files {
 set js_filename [file join $dist_dir "${name}.js"]
 concat_code [concat \
                  [list "profilingStartTime = (new Date()).getTime();"] \
-                 $dependencies \
+                 $build_dependencies \
                  [list "var ${object} = new Glue({alias:'${name}'});"] \
                  $liquid_script \
                  $js_files \
