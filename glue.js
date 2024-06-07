@@ -392,8 +392,10 @@ var Glue = function(opts){
     defaultLocale = locale.substring(0,2);
   };
   var language = "en";
-  // Use navigator.language in browsers and navigator.browserLanguage in <IE11
-  if(typeof navigator != "undefined" && typeof navigator.language != "undefined"){
+  if (typeof document !== 'undefined' && document.documentElement && document.documentElement.lang) {
+    language = (""+document.documentElement.lang).substring(0,2);
+  }else if(typeof navigator != "undefined" && typeof navigator.language != "undefined"){
+    // Use navigator.language in browsers and navigator.browserLanguage in <IE11
     language = (""+navigator.language).substring(0,2);
   }else if(typeof navigator != "undefined" && typeof navigator.browserLanguage != "undefined"){
     language = (""+navigator.browserLanguage).substring(0,2);
